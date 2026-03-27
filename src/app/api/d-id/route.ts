@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { DEFAULT_ELEVENLABS_VOICE_ID } from "@/lib/default-voice";
 
 export const maxDuration = 120;
 
@@ -53,17 +54,9 @@ export async function POST(req: NextRequest) {
     typeof bodyVoice === "string" && bodyVoice.trim().length > 0
       ? bodyVoice.trim()
       : null;
-  const fromEnv = process.env.ELEVENLABS_VOICE_ID?.trim() || null;
+  const fromEnv =
+    process.env.ELEVENLABS_VOICE_ID?.trim() || DEFAULT_ELEVENLABS_VOICE_ID;
   const voiceId = fromBody ?? fromEnv;
-  if (!voiceId) {
-    return NextResponse.json(
-      {
-        error:
-          "No voice ID: send { voiceId } in the JSON body or set ELEVENLABS_VOICE_ID",
-      },
-      { status: 400 },
-    );
-  }
 
   const external = JSON.stringify({ elevenlabs: elevenKey });
 
