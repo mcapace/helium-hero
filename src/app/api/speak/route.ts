@@ -20,7 +20,10 @@ export async function POST(req: NextRequest) {
   const bodyVoice = (body as { voiceId?: unknown }).voiceId;
 
   if (typeof text !== "string" || text.trim().length < 1) {
-    return NextResponse.json({ error: "Expected { text: string }" }, { status: 400 });
+    return NextResponse.json(
+      { error: "Expected { text: string }" },
+      { status: 400 },
+    );
   }
 
   const fromBody =
@@ -41,10 +44,15 @@ export async function POST(req: NextRequest) {
   }
 
   const modelId =
-    process.env.ELEVENLABS_MODEL?.trim() || "eleven_turbo_v2_5";
+    process.env.ELEVENLABS_MODEL?.trim() || "eleven_flash_v2_5";
 
-  const url = `https://api.elevenlabs.io/v1/text-to-speech/${encodeURIComponent(voiceId)}`;
-  const res = await fetch(url, {
+  const streamUrl = new URL(
+    `https://api.elevenlabs.io/v1/text-to-speech/${encodeURIComponent(voiceId)}/stream`,
+  );
+  streamUrl.searchParams.set("optimize_streaming_latency", "3");
+  streamUrl.searchParams.set("output_format", "mp3_44100_128");
+
+  const res = await fetch(streamUrl.toString(), {
     method: "POST",
     headers: {
       "xi-api-key": key,
@@ -66,8 +74,14 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const audio = await res.arrayBuffer();
-  return new NextResponse(audio, {
+  if (!res.body) {
+    return NextResponse.json(
+      { error: "No audio stream from ElevenLabs" },
+      { status: 502 },
+    );
+  }
+
+  return new NextResponse(res.body, {
     headers: {
       "Content-Type": "audio/mpeg",
       "Cache-Control": "no-store",

@@ -107,7 +107,7 @@ export async function POST(req: NextRequest) {
   }
 
   const model =
-    process.env.ANTHROPIC_MODEL ?? "claude-sonnet-4-20250514";
+    process.env.ANTHROPIC_MODEL?.trim() || "claude-3-5-haiku-20241022";
 
   const res = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
@@ -121,6 +121,7 @@ export async function POST(req: NextRequest) {
       max_tokens: 1024,
       system: SYSTEM_PROMPT,
       messages: anthropicMessages,
+      stream: true,
     }),
   });
 
@@ -132,11 +133,19 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const data = (await res.json()) as {
-    content?: Array<{ type: string; text?: string }>;
-  };
-  const textBlock = data.content?.find((c) => c.type === "text");
-  const reply = textBlock?.text?.trim() ?? "";
+  if (!res.body) {
+    return NextResponse.json(
+      { error: "No response body from Anthropic" },
+      { status: 502 },
+    );
+  }
 
-  return NextResponse.json({ reply } satisfies { reply: string });
+  return new Response(res.body, {
+    headers: {
+      "Content-Type": "text/event-stream; charset=utf-8",
+      "Cache-Control": "no-cache, no-transform",
+      Connection: "keep-alive",
+      "X-Accel-Buffering": "no",
+    },
+  });
 }
