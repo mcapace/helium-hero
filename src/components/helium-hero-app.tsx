@@ -390,45 +390,125 @@ export function HeliumHeroApp() {
       setLoading(true);
 
       try {
+        // Stream the chat response for faster time-to-first-sentence
         const res = await fetch("/api/chat", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
+            stream: true,
             messages: nextMessages.map((m) => ({
               role: m.role,
               content: m.content,
             })),
           }),
         });
-        const data = (await res.json()) as {
-          reply?: string;
-          error?: string;
-          detail?: string;
-        };
+
         if (!res.ok) {
-          const errDetail =
+          const data = await res.json().catch(() => ({})) as {
+            error?: string;
+            detail?: string;
+          };
+          throw new Error(
             typeof data.detail === "string"
               ? data.detail
-              : (data.error ?? "Chat request failed");
-          throw new Error(errDetail);
+              : (data.error ?? "Chat request failed"),
+          );
         }
-        const reply = data.reply ?? "";
-        setThread((prev) => [...prev, { role: "assistant", content: reply }]);
 
-        if (gen !== playbackGenRef.current) return;
+        // Parse the SSE stream, accumulate text, fire TTS on first sentence
+        const reader = res.body?.getReader();
+        if (!reader) throw new Error("No response stream");
 
-        void playElevenLabsThenMaybeWaitForVideo(reply, gen);
-        void requestDidTalk(reply, gen);
+        const decoder = new TextDecoder();
+        let fullText = "";
+        let firstSentenceFired = false;
+        let buffer = "";
+
+        // Add a placeholder assistant message that we'll update as text streams in
+        setThread((prev) => [...prev, { role: "assistant", content: "" }]);
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split("\n");
+          buffer = lines.pop() ?? "";
+
+          for (const line of lines) {
+            if (!line.startsWith("data: ")) continue;
+            const payload = line.slice(6).trim();
+            if (payload === "[DONE]") continue;
+
+            try {
+              const evt = JSON.parse(payload) as {
+                type?: string;
+                delta?: { type?: string; text?: string };
+              };
+              if (
+                evt.type === "content_block_delta" &&
+                evt.delta?.type === "text_delta" &&
+                evt.delta.text
+              ) {
+                fullText += evt.delta.text;
+                // Update the assistant message in-place as chunks arrive
+                const snapshot = fullText;
+                setThread((prev) => {
+                  const updated = [...prev];
+                  updated[updated.length - 1] = {
+                    role: "assistant",
+                    content: snapshot,
+                  };
+                  return updated;
+                });
+
+                // Fire TTS as soon as we have the first complete sentence
+                if (
+                  !firstSentenceFired &&
+                  gen === playbackGenRef.current
+                ) {
+                  const sentenceEnd = fullText.search(/[.!?]\s/);
+                  if (sentenceEnd > 10) {
+                    firstSentenceFired = true;
+                    const firstChunk = fullText.slice(0, sentenceEnd + 1);
+                    void playElevenLabsThenMaybeWaitForVideo(firstChunk, gen);
+                  }
+                }
+              }
+            } catch {
+              // skip malformed events
+            }
+          }
+        }
+
+        // If we never hit a sentence boundary, play whatever we got
+        if (!firstSentenceFired && fullText && gen === playbackGenRef.current) {
+          void playElevenLabsThenMaybeWaitForVideo(fullText, gen);
+        }
+
+        // Fire D-ID with the full reply
+        if (gen === playbackGenRef.current && fullText) {
+          void requestDidTalk(fullText, gen);
+        }
       } catch (e) {
         const msg =
           e instanceof Error ? e.message : "Something went wrong. Try again!";
-        setThread((prev) => [
-          ...prev,
-          {
-            role: "assistant",
-            content: `Oops — I hit a snag: ${msg}. Check your API keys and try again. ⚡`,
-          },
-        ]);
+        setThread((prev) => {
+          // Remove empty placeholder if it exists, then add error
+          const cleaned =
+            prev.length > 0 &&
+            prev[prev.length - 1].role === "assistant" &&
+            prev[prev.length - 1].content === ""
+              ? prev.slice(0, -1)
+              : prev;
+          return [
+            ...cleaned,
+            {
+              role: "assistant",
+              content: `Oops — I hit a snag: ${msg}. Check your API keys and try again. ⚡`,
+            },
+          ];
+        });
       } finally {
         inFlightRef.current = false;
         setLoading(false);

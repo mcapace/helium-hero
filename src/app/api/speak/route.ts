@@ -29,9 +29,10 @@ export async function POST(req: NextRequest) {
       : voiceId;
 
   const modelId =
-    process.env.ELEVENLABS_MODEL?.trim() || "eleven_turbo_v2_5";
+    process.env.ELEVENLABS_MODEL?.trim() || "eleven_flash_v2_5";
 
-  const url = `https://api.elevenlabs.io/v1/text-to-speech/${encodeURIComponent(resolvedVoiceId)}`;
+  // Use the streaming endpoint for lower time-to-first-byte
+  const url = `https://api.elevenlabs.io/v1/text-to-speech/${encodeURIComponent(resolvedVoiceId)}/stream`;
   const res = await fetch(url, {
     method: "POST",
     headers: {
@@ -43,6 +44,7 @@ export async function POST(req: NextRequest) {
       text: text.trim(),
       model_id: modelId,
       voice_settings: { stability: 0.5, similarity_boost: 0.75 },
+      optimize_streaming_latency: 3,
     }),
   });
 
@@ -54,11 +56,12 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const audio = await res.arrayBuffer();
-  return new NextResponse(audio, {
+  // Stream audio chunks back to the client
+  return new NextResponse(res.body, {
     headers: {
       "Content-Type": "audio/mpeg",
       "Cache-Control": "no-store",
+      "Transfer-Encoding": "chunked",
     },
   });
 }
