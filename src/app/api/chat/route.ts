@@ -107,7 +107,7 @@ export async function POST(req: NextRequest) {
   }
 
   const model =
-    process.env.ANTHROPIC_MODEL?.trim() || "claude-3-5-haiku-20241022";
+    process.env.ANTHROPIC_MODEL?.trim() || "claude-haiku-4-5-20251001";
 
   const res = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
