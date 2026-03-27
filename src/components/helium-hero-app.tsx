@@ -437,7 +437,7 @@ export function HeliumHeroApp() {
               {!heroBroken ? (
                 <video
                   ref={idleVideoRef}
-                  className="absolute inset-0 z-0 h-full w-full scale-[1.02] object-cover object-center md:scale-100"
+                  className="absolute inset-0 z-0 h-full w-full object-cover [object-position:center_12%]"
                   src={HERO_IDLE_VIDEO}
                   poster="/images/helium-hero.png"
                   autoPlay
@@ -467,7 +467,7 @@ export function HeliumHeroApp() {
                 ref={videoRef}
                 src={dIdVideoUrl ?? undefined}
                 playsInline
-                className={`absolute inset-0 z-10 h-full w-full object-cover object-center transition-opacity duration-500 ease-out ${
+                className={`absolute inset-0 z-10 h-full w-full object-cover [object-position:center_12%] transition-opacity duration-500 ease-out ${
                   videoLayerVisible && dIdVideoUrl
                     ? "opacity-100"
                     : "pointer-events-none opacity-0"
