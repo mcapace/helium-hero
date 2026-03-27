@@ -51,6 +51,24 @@ const WELCOME_MESSAGE: ChatMessage = {
     "Hey there, science star! I’m Helium Hero — ask me anything about helium, the universe, or why balloons love floating. 🎈",
 };
 
+function elevenLabsVoiceHint(
+  err: { error?: string; detail?: string },
+  status: number,
+): string {
+  if (err.error?.includes("Missing ELEVENLABS") || status === 500) {
+    return "Voice offline: set ELEVENLABS_API_KEY (and ELEVENLABS_VOICE_ID) in Vercel → Env, then redeploy.";
+  }
+  const detail = typeof err.detail === "string" ? err.detail : "";
+  if (
+    detail.includes("missing_permissions") ||
+    detail.includes("text_to_speech")
+  ) {
+    return "Your ElevenLabs API key can’t run Text-to-speech. In elevenlabs.io go to Developers → API keys, open your key (or create one), enable Text to speech, save, then replace ELEVENLABS_API_KEY in Vercel and .env.local and redeploy.";
+  }
+  const short = detail.slice(0, 200);
+  return `Voice synth failed (${err.error ?? status})${short ? ` — ${short}` : ""}`;
+}
+
 function AssistantBubble({ children }: { children: React.ReactNode }) {
   return (
     <div className="max-w-[88%] rounded-2xl bg-gradient-to-br from-[#f472b6]/90 via-[#22d3ee]/80 to-[#a78bfa]/90 p-[1px] shadow-[0_0_40px_rgba(34,211,238,0.12),0_0_1px_rgba(255,255,255,0.15)_inset]">
@@ -214,20 +232,7 @@ export function HeliumHeroApp() {
             error?: string;
             detail?: string;
           };
-          const detail =
-            typeof err.detail === "string" ? err.detail.slice(0, 160) : "";
-          if (
-            err.error?.includes("Missing ELEVENLABS") ||
-            res.status === 500
-          ) {
-            setVoiceHint(
-              "Voice offline: set ELEVENLABS_API_KEY (and ELEVENLABS_VOICE_ID) in Vercel → Env, then redeploy.",
-            );
-          } else {
-            setVoiceHint(
-              `Voice synth failed (${err.error ?? res.status})${detail ? ` — ${detail}` : ""}`,
-            );
-          }
+          setVoiceHint(elevenLabsVoiceHint(err, res.status));
           console.warn("ElevenLabs TTS failed:", err);
           return;
         }
@@ -235,11 +240,18 @@ export function HeliumHeroApp() {
         const blob = await res.blob();
         if (blob.size < 400 || blob.type.includes("json")) {
           const snippet = await blob.text().catch(() => "");
-          setVoiceHint(
-            snippet
-              ? `Voice API: ${snippet.slice(0, 140)}`
-              : "Voice response was empty — check ELEVENLABS_API_KEY and model.",
-          );
+          if (
+            snippet.includes("missing_permissions") ||
+            snippet.includes("text_to_speech")
+          ) {
+            setVoiceHint(elevenLabsVoiceHint({ detail: snippet }, res.status));
+          } else {
+            setVoiceHint(
+              snippet
+                ? `Voice API: ${snippet.slice(0, 140)}`
+                : "Voice response was empty — check ELEVENLABS_API_KEY and model.",
+            );
+          }
           return;
         }
 
