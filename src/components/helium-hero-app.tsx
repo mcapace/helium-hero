@@ -5,7 +5,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 type ChatMessage = { role: "user" | "assistant"; content: string };
 
-type VoiceStatus = "Ready" | "Speaking..." | "Thinking...";
+type VoiceStatus = "Ready" | "Thinking..." | "Speaking...";
 
 const QUICK_PROMPTS: { label: string; text: string }[] = [
   { label: "⚡ Superpowers", text: "What superpowers do you have as helium?" },
@@ -17,57 +17,48 @@ const QUICK_PROMPTS: { label: string; text: string }[] = [
 
 const FAST_FACTS = [
   {
-    title: "Boiling point",
-    body: "Helium stays a liquid only under pressure — at normal pressure it boils at about −268.9 °C (−452 °F), the coldest of any element.",
+    title: "🌡️ Boiling point",
+    body: "−269°C — coldest liquid on Earth",
   },
   {
-    title: "Universe abundance",
-    body: "After hydrogen, helium is the second most common element in the universe, forged in the Big Bang and in stars.",
+    title: "⭐ Abundance",
+    body: "Second most abundant element in the universe",
   },
   {
-    title: "Discovery year",
-    body: "Astronomers saw its fingerprint in sunlight during an eclipse in 1868; it was later named after Helios, the Greek sun god.",
+    title: "🔬 Discovery",
+    body: "Discovered in 1868 by observing the Sun",
   },
   {
-    title: "Why balloons float",
-    body: "Helium is lighter than air, so a balloon filled with it gets pushed upward by buoyancy — like a cork in water.",
+    title: "🎈 Lightness",
+    body: "7× lighter than air — why balloons float",
   },
   {
-    title: "MRI machines",
-    body: "Super‑cold liquid helium cools superconducting magnets in MRI scanners, helping doctors peek inside the body safely.",
+    title: "🏥 MRI machines",
+    body: "Used to cool superconducting magnets",
   },
   {
-    title: "NASA & rockets",
-    body: "Liquid helium helps keep rocket fuel tanks cold and pressurized so spacecraft can launch and explore.",
+    title: "🚀 NASA",
+    body: "Used as rocket fuel coolant by NASA",
   },
 ];
 
 const BALLOONS = ["🎈", "🎈", "🎈", "🎈", "🎈", "🎈", "🎈", "🎈"];
-
-function speakText(
-  text: string,
-  onStart: () => void,
-  onEnd: () => void,
-) {
-  if (typeof window === "undefined" || !window.speechSynthesis) {
-    onEnd();
-    return;
-  }
-  window.speechSynthesis.cancel();
-  const utterance = new SpeechSynthesisUtterance(text);
-  utterance.rate = 1;
-  utterance.pitch = 1.05;
-  utterance.onstart = onStart;
-  utterance.onend = onEnd;
-  utterance.onerror = onEnd;
-  window.speechSynthesis.speak(utterance);
-}
 
 const WELCOME_MESSAGE: ChatMessage = {
   role: "assistant",
   content:
     "Hey there, science star! I’m Helium Hero — ask me anything about helium, the universe, or why balloons love floating. 🎈",
 };
+
+function AssistantBubble({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="max-w-[85%] rounded-2xl bg-gradient-to-br from-[#f472b6] via-[#22d3ee] to-[#a78bfa] p-[1px] shadow-[0_0_24px_rgba(34,211,238,0.15)]">
+      <div className="rounded-[0.9rem] bg-[#0c0c18]/95 px-4 py-2.5 text-sm text-zinc-100">
+        {children}
+      </div>
+    </div>
+  );
+}
 
 export function HeliumHeroApp() {
   const [thread, setThread] = useState<ChatMessage[]>([]);
@@ -76,9 +67,17 @@ export function HeliumHeroApp() {
   const [voiceStatus, setVoiceStatus] = useState<VoiceStatus>("Ready");
   const [speaking, setSpeaking] = useState(false);
   const [heroBroken, setHeroBroken] = useState(false);
+  const [dIdVideoUrl, setDIdVideoUrl] = useState<string | null>(null);
+  const [videoLayerVisible, setVideoLayerVisible] = useState(false);
+
   const listRef = useRef<HTMLDivElement>(null);
   const inFlightRef = useRef(false);
   const threadRef = useRef<ChatMessage[]>([]);
+  const playbackGenRef = useRef(0);
+  const elevenAudioRef = useRef<HTMLAudioElement | null>(null);
+  const elevenObjectUrlRef = useRef<string | null>(null);
+  const supplantedByVideoRef = useRef(false);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
 
   useEffect(() => {
     threadRef.current = thread;
@@ -101,68 +100,222 @@ export function HeliumHeroApp() {
     setVoiceStatus(loading ? "Thinking..." : speaking ? "Speaking..." : "Ready");
   }, [loading, speaking]);
 
-  const sendChat = useCallback(async (userText: string) => {
-    const trimmed = userText.trim();
-    if (!trimmed || inFlightRef.current) return;
-    inFlightRef.current = true;
+  useEffect(() => {
+    if (!dIdVideoUrl || !videoLayerVisible) return;
+    const v = videoRef.current;
+    if (!v) return;
+    v.muted = false;
+    void v.play().catch(() => {
+      setSpeaking(false);
+      setVideoLayerVisible(false);
+    });
+  }, [dIdVideoUrl, videoLayerVisible]);
 
-    const nextMessages: ChatMessage[] = [
-      ...threadRef.current,
-      { role: "user", content: trimmed },
-    ];
-    setThread(nextMessages);
-
-    setLoading(true);
-    setSpeaking(false);
-    if (typeof window !== "undefined" && window.speechSynthesis) {
-      window.speechSynthesis.cancel();
+  const stopElevenLabs = useCallback(() => {
+    if (elevenAudioRef.current) {
+      elevenAudioRef.current.pause();
+      elevenAudioRef.current.src = "";
+      elevenAudioRef.current = null;
     }
-
-    try {
-      const res = await fetch("/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          messages: nextMessages.map((m) => ({
-            role: m.role,
-            content: m.content,
-          })),
-        }),
-      });
-      const data = (await res.json()) as {
-        reply?: string;
-        error?: string;
-        detail?: string;
-      };
-      if (!res.ok) {
-        const errDetail =
-          typeof data.detail === "string"
-            ? data.detail
-            : (data.error ?? "Chat request failed");
-        throw new Error(errDetail);
-      }
-      const reply = data.reply ?? "";
-      setThread((prev) => [...prev, { role: "assistant", content: reply }]);
-      speakText(
-        reply,
-        () => setSpeaking(true),
-        () => setSpeaking(false),
-      );
-    } catch (e) {
-      const msg =
-        e instanceof Error ? e.message : "Something went wrong. Try again!";
-      setThread((prev) => [
-        ...prev,
-        {
-          role: "assistant",
-          content: `Oops — I hit a snag: ${msg}. Check your API key on the server and try again. ⚡`,
-        },
-      ]);
-    } finally {
-      inFlightRef.current = false;
-      setLoading(false);
+    if (elevenObjectUrlRef.current) {
+      URL.revokeObjectURL(elevenObjectUrlRef.current);
+      elevenObjectUrlRef.current = null;
     }
   }, []);
+
+  const resetPlayback = useCallback(() => {
+    supplantedByVideoRef.current = false;
+    stopElevenLabs();
+    if (videoRef.current) {
+      videoRef.current.pause();
+      videoRef.current.removeAttribute("src");
+      videoRef.current.load();
+    }
+    setVideoLayerVisible(false);
+    setDIdVideoUrl(null);
+    setSpeaking(false);
+  }, [stopElevenLabs]);
+
+  useEffect(() => {
+    return () => {
+      if (elevenAudioRef.current) {
+        elevenAudioRef.current.pause();
+        elevenAudioRef.current.src = "";
+        elevenAudioRef.current = null;
+      }
+      if (elevenObjectUrlRef.current) {
+        URL.revokeObjectURL(elevenObjectUrlRef.current);
+        elevenObjectUrlRef.current = null;
+      }
+    };
+  }, []);
+
+  const playElevenLabsThenMaybeWaitForVideo = useCallback(
+    async (text: string, gen: number) => {
+      supplantedByVideoRef.current = false;
+      try {
+        const res = await fetch("/api/speak", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text }),
+        });
+        if (gen !== playbackGenRef.current) return;
+
+        if (!res.ok) {
+          const err = (await res.json().catch(() => ({}))) as { error?: string };
+          console.warn("ElevenLabs fallback failed:", err);
+          return;
+        }
+
+        const blob = await res.blob();
+        if (gen !== playbackGenRef.current) {
+          URL.revokeObjectURL(URL.createObjectURL(blob));
+          return;
+        }
+
+        const url = URL.createObjectURL(blob);
+        stopElevenLabs();
+        elevenObjectUrlRef.current = url;
+
+        const audio = new Audio(url);
+        elevenAudioRef.current = audio;
+        audio.addEventListener("play", () => {
+          if (gen === playbackGenRef.current) setSpeaking(true);
+        });
+        audio.addEventListener("ended", () => {
+          if (gen !== playbackGenRef.current) return;
+          if (!supplantedByVideoRef.current) setSpeaking(false);
+        });
+        audio.addEventListener("error", () => {
+          if (gen === playbackGenRef.current && !supplantedByVideoRef.current) {
+            setSpeaking(false);
+          }
+        });
+
+        await audio.play().catch(() => {
+          if (gen === playbackGenRef.current && !supplantedByVideoRef.current) {
+            setSpeaking(false);
+          }
+        });
+      } catch (e) {
+        console.warn("ElevenLabs playback error:", e);
+      }
+    },
+    [stopElevenLabs],
+  );
+
+  const requestDidTalk = useCallback(
+    async (text: string, gen: number) => {
+      try {
+        const res = await fetch("/api/d-id", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "talk", text }),
+        });
+        const data = (await res.json()) as { videoUrl?: string; error?: string };
+        if (gen !== playbackGenRef.current) return;
+
+        if (!res.ok || !data.videoUrl) {
+          console.warn("D-ID talk failed:", data.error ?? res.status);
+          return;
+        }
+
+        supplantedByVideoRef.current = true;
+        stopElevenLabs();
+
+        setDIdVideoUrl(data.videoUrl);
+        setVideoLayerVisible(true);
+        setSpeaking(true);
+      } catch (e) {
+        console.warn("D-ID request error:", e);
+      }
+    },
+    [stopElevenLabs],
+  );
+
+  const onVideoEnded = useCallback(() => {
+    setVideoLayerVisible(false);
+  }, []);
+
+  const onVideoTransitionEnd = useCallback(
+    (e: React.TransitionEvent<HTMLVideoElement>) => {
+      if (e.propertyName !== "opacity") return;
+      if (videoLayerVisible) return;
+      setDIdVideoUrl(null);
+      setSpeaking(false);
+      if (videoRef.current) {
+        videoRef.current.pause();
+        videoRef.current.removeAttribute("src");
+        videoRef.current.load();
+      }
+    },
+    [videoLayerVisible],
+  );
+
+  const sendChat = useCallback(
+    async (userText: string) => {
+      const trimmed = userText.trim();
+      if (!trimmed || inFlightRef.current) return;
+      inFlightRef.current = true;
+      playbackGenRef.current += 1;
+      const gen = playbackGenRef.current;
+      resetPlayback();
+
+      const nextMessages: ChatMessage[] = [
+        ...threadRef.current,
+        { role: "user", content: trimmed },
+      ];
+      setThread(nextMessages);
+
+      setLoading(true);
+
+      try {
+        const res = await fetch("/api/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            messages: nextMessages.map((m) => ({
+              role: m.role,
+              content: m.content,
+            })),
+          }),
+        });
+        const data = (await res.json()) as {
+          reply?: string;
+          error?: string;
+          detail?: string;
+        };
+        if (!res.ok) {
+          const errDetail =
+            typeof data.detail === "string"
+              ? data.detail
+              : (data.error ?? "Chat request failed");
+          throw new Error(errDetail);
+        }
+        const reply = data.reply ?? "";
+        setThread((prev) => [...prev, { role: "assistant", content: reply }]);
+
+        if (gen !== playbackGenRef.current) return;
+
+        void playElevenLabsThenMaybeWaitForVideo(reply, gen);
+        void requestDidTalk(reply, gen);
+      } catch (e) {
+        const msg =
+          e instanceof Error ? e.message : "Something went wrong. Try again!";
+        setThread((prev) => [
+          ...prev,
+          {
+            role: "assistant",
+            content: `Oops — I hit a snag: ${msg}. Check your API keys and try again. ⚡`,
+          },
+        ]);
+      } finally {
+        inFlightRef.current = false;
+        setLoading(false);
+      }
+    },
+    [playElevenLabsThenMaybeWaitForVideo, requestDidTalk, resetPlayback],
+  );
 
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -170,6 +323,8 @@ export function HeliumHeroApp() {
     setInput("");
     void sendChat(t);
   };
+
+  const heroRing = speaking || videoLayerVisible;
 
   return (
     <div className="relative min-h-screen overflow-x-hidden text-zinc-100">
@@ -224,7 +379,9 @@ export function HeliumHeroApp() {
         <section className="flex flex-col items-center">
           <div
             className={`relative mx-auto h-[min(52vh,380px)] w-full max-w-[280px] rounded-3xl p-[3px] sm:max-w-[320px] ${
-              speaking ? "animate-hero-ring-speaking" : "shadow-[0_0_0_1px_rgba(167,139,250,0.25)]"
+              heroRing
+                ? "animate-hero-ring-speaking"
+                : "shadow-[0_0_0_1px_rgba(167,139,250,0.25)]"
             }`}
           >
             <div className="relative h-full w-full overflow-hidden rounded-[1.35rem] bg-gradient-to-br from-[#1a1a2e] to-[#0a0a1a]">
@@ -235,7 +392,7 @@ export function HeliumHeroApp() {
                   fill
                   priority
                   sizes="(max-width: 640px) 280px, 320px"
-                  className="object-cover object-top"
+                  className="object-cover object-center"
                   onError={() => setHeroBroken(true)}
                 />
               ) : (
@@ -249,6 +406,20 @@ export function HeliumHeroApp() {
                   </p>
                 </div>
               )}
+              <video
+                key={dIdVideoUrl ?? "none"}
+                ref={videoRef}
+                src={dIdVideoUrl ?? undefined}
+                playsInline
+                className={`absolute inset-0 z-10 h-full w-full object-cover object-center rounded-[1.35rem] transition-opacity duration-500 ease-out ${
+                  videoLayerVisible && dIdVideoUrl
+                    ? "opacity-100"
+                    : "pointer-events-none opacity-0"
+                }`}
+                onEnded={onVideoEnded}
+                onTransitionEnd={onVideoTransitionEnd}
+                aria-hidden={!dIdVideoUrl}
+              />
             </div>
           </div>
 
@@ -298,27 +469,23 @@ export function HeliumHeroApp() {
 
         <section
           ref={listRef}
-          className="mt-8 flex max-h-[min(40vh,360px)] flex-col gap-3 overflow-y-auto rounded-2xl border border-white/10 bg-black/25 p-4 backdrop-blur-md sm:max-h-[420px]"
+          className="mt-8 flex h-[300px] flex-col gap-3 overflow-y-auto rounded-2xl border border-white/10 bg-black/25 p-4 backdrop-blur-md"
         >
           <div className="animate-slide-in-msg flex justify-start">
-            <div className="max-w-[85%] rounded-2xl rounded-bl-md bg-gradient-to-br from-[#f472b6]/35 via-[#22d3ee]/25 to-[#a78bfa]/30 px-4 py-2.5 text-sm text-zinc-100 shadow-[0_0_24px_rgba(34,211,238,0.12)]">
-              {WELCOME_MESSAGE.content}
-            </div>
+            <AssistantBubble>{WELCOME_MESSAGE.content}</AssistantBubble>
           </div>
           {thread.map((m, i) => (
             <div
               key={`${i}-${m.role}-${m.content.slice(0, 12)}`}
               className={`animate-slide-in-msg flex ${m.role === "user" ? "justify-end" : "justify-start"}`}
             >
-              <div
-                className={
-                  m.role === "user"
-                    ? "max-w-[85%] rounded-2xl rounded-br-md border border-white/20 bg-white/10 px-4 py-2.5 text-sm text-white shadow-lg"
-                    : "max-w-[85%] rounded-2xl rounded-bl-md bg-gradient-to-br from-[#f472b6]/35 via-[#22d3ee]/25 to-[#a78bfa]/30 px-4 py-2.5 text-sm text-zinc-100 shadow-[0_0_24px_rgba(34,211,238,0.12)]"
-                }
-              >
-                {m.content}
-              </div>
+              {m.role === "user" ? (
+                <div className="max-w-[85%] rounded-2xl rounded-br-md border border-white/20 bg-white/10 px-4 py-2.5 text-sm text-white shadow-lg">
+                  {m.content}
+                </div>
+              ) : (
+                <AssistantBubble>{m.content}</AssistantBubble>
+              )}
             </div>
           ))}
           {loading && (
