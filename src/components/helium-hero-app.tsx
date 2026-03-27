@@ -1,7 +1,8 @@
 "use client";
 
-import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
+
+const HERO_IDLE_VIDEO = "/video/helium-hero-idle.mp4";
 
 type ChatMessage = { role: "user" | "assistant"; content: string };
 
@@ -78,6 +79,7 @@ export function HeliumHeroApp() {
   const elevenObjectUrlRef = useRef<string | null>(null);
   const supplantedByVideoRef = useRef(false);
   const videoRef = useRef<HTMLVideoElement | null>(null);
+  const idleVideoRef = useRef<HTMLVideoElement | null>(null);
 
   useEffect(() => {
     threadRef.current = thread;
@@ -110,6 +112,16 @@ export function HeliumHeroApp() {
       setVideoLayerVisible(false);
     });
   }, [dIdVideoUrl, videoLayerVisible]);
+
+  useEffect(() => {
+    const idle = idleVideoRef.current;
+    if (!idle || heroBroken) return;
+    if (videoLayerVisible && dIdVideoUrl) {
+      idle.pause();
+    } else {
+      void idle.play().catch(() => {});
+    }
+  }, [videoLayerVisible, dIdVideoUrl, heroBroken]);
 
   const stopElevenLabs = useCallback(() => {
     if (elevenAudioRef.current) {
@@ -386,13 +398,17 @@ export function HeliumHeroApp() {
           >
             <div className="relative h-full w-full overflow-hidden rounded-[1.35rem] bg-gradient-to-br from-[#1a1a2e] to-[#0a0a1a]">
               {!heroBroken ? (
-                <Image
-                  src="/images/helium-hero.png"
-                  alt="Helium Hero character"
-                  fill
-                  priority
-                  sizes="(max-width: 640px) 280px, 320px"
-                  className="object-cover object-center"
+                <video
+                  ref={idleVideoRef}
+                  className="absolute inset-0 z-0 h-full w-full object-cover object-center rounded-[1.35rem]"
+                  src={HERO_IDLE_VIDEO}
+                  poster="/images/helium-hero.png"
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  preload="auto"
+                  aria-label="Helium Hero character loop"
                   onError={() => setHeroBroken(true)}
                 />
               ) : (
@@ -401,8 +417,11 @@ export function HeliumHeroApp() {
                     He
                   </span>
                   <p className="text-xs text-zinc-400">
-                    Add your artwork to{" "}
-                    <code className="text-[#22d3ee]">public/images/helium-hero.png</code>
+                    Add{" "}
+                    <code className="text-[#22d3ee]">public/video/helium-hero-idle.mp4</code>{" "}
+                    and{" "}
+                    <code className="text-[#22d3ee]">public/images/helium-hero.png</code>{" "}
+                    (poster).
                   </p>
                 </div>
               )}
