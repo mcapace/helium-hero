@@ -70,6 +70,8 @@ export function HeliumHeroApp() {
   const [heroBroken, setHeroBroken] = useState(false);
   const [dIdVideoUrl, setDIdVideoUrl] = useState<string | null>(null);
   const [videoLayerVisible, setVideoLayerVisible] = useState(false);
+  const [voiceHint, setVoiceHint] = useState<string | null>(null);
+  const [showSoundUnlock, setShowSoundUnlock] = useState(false);
 
   const listRef = useRef<HTMLDivElement>(null);
   const inFlightRef = useRef(false);
@@ -80,6 +82,7 @@ export function HeliumHeroApp() {
   const supplantedByVideoRef = useRef(false);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const idleVideoRef = useRef<HTMLVideoElement | null>(null);
+  const soundUnlockRef = useRef<(() => Promise<void>) | null>(null);
 
   useEffect(() => {
     threadRef.current = thread;
@@ -106,11 +109,41 @@ export function HeliumHeroApp() {
     if (!dIdVideoUrl || !videoLayerVisible) return;
     const v = videoRef.current;
     if (!v) return;
-    v.muted = false;
-    void v.play().catch(() => {
-      setSpeaking(false);
-      setVideoLayerVisible(false);
-    });
+
+    const run = async () => {
+      v.muted = false;
+      try {
+        await v.play();
+        setShowSoundUnlock(false);
+        setVoiceHint(null);
+        soundUnlockRef.current = null;
+      } catch {
+        v.muted = true;
+        try {
+          await v.play();
+          soundUnlockRef.current = async () => {
+            v.muted = false;
+            try {
+              await v.play();
+            } catch {
+              /* ignore */
+            }
+            setShowSoundUnlock(false);
+            setVoiceHint(null);
+            soundUnlockRef.current = null;
+          };
+          setShowSoundUnlock(true);
+          setVoiceHint(
+            "Tap Enable sound — your browser blocked audio until you interact.",
+          );
+        } catch {
+          setSpeaking(false);
+          setVideoLayerVisible(false);
+        }
+      }
+    };
+
+    void run();
   }, [dIdVideoUrl, videoLayerVisible]);
 
   useEffect(() => {
@@ -146,6 +179,9 @@ export function HeliumHeroApp() {
     setVideoLayerVisible(false);
     setDIdVideoUrl(null);
     setSpeaking(false);
+    setVoiceHint(null);
+    setShowSoundUnlock(false);
+    soundUnlockRef.current = null;
   }, [stopElevenLabs]);
 
   useEffect(() => {
@@ -174,16 +210,41 @@ export function HeliumHeroApp() {
         if (gen !== playbackGenRef.current) return;
 
         if (!res.ok) {
-          const err = (await res.json().catch(() => ({}))) as { error?: string };
-          console.warn("ElevenLabs fallback failed:", err);
+          const err = (await res.json().catch(() => ({}))) as {
+            error?: string;
+            detail?: string;
+          };
+          const detail =
+            typeof err.detail === "string" ? err.detail.slice(0, 160) : "";
+          if (
+            err.error?.includes("Missing ELEVENLABS") ||
+            res.status === 500
+          ) {
+            setVoiceHint(
+              "Voice offline: set ELEVENLABS_API_KEY (and ELEVENLABS_VOICE_ID) in Vercel → Env, then redeploy.",
+            );
+          } else {
+            setVoiceHint(
+              `Voice synth failed (${err.error ?? res.status})${detail ? ` — ${detail}` : ""}`,
+            );
+          }
+          console.warn("ElevenLabs TTS failed:", err);
           return;
         }
 
         const blob = await res.blob();
-        if (gen !== playbackGenRef.current) {
-          URL.revokeObjectURL(URL.createObjectURL(blob));
+        if (blob.size < 400 || blob.type.includes("json")) {
+          const snippet = await blob.text().catch(() => "");
+          setVoiceHint(
+            snippet
+              ? `Voice API: ${snippet.slice(0, 140)}`
+              : "Voice response was empty — check ELEVENLABS_API_KEY and model.",
+          );
           return;
         }
+
+        if (gen !== playbackGenRef.current) return;
+        if (supplantedByVideoRef.current) return;
 
         const url = URL.createObjectURL(blob);
         stopElevenLabs();
@@ -192,7 +253,11 @@ export function HeliumHeroApp() {
         const audio = new Audio(url);
         elevenAudioRef.current = audio;
         audio.addEventListener("play", () => {
-          if (gen === playbackGenRef.current) setSpeaking(true);
+          if (gen === playbackGenRef.current) {
+            setSpeaking(true);
+            setVoiceHint(null);
+            setShowSoundUnlock(false);
+          }
         });
         audio.addEventListener("ended", () => {
           if (gen !== playbackGenRef.current) return;
@@ -201,15 +266,36 @@ export function HeliumHeroApp() {
         audio.addEventListener("error", () => {
           if (gen === playbackGenRef.current && !supplantedByVideoRef.current) {
             setSpeaking(false);
+            setVoiceHint("Could not decode audio — try another browser.");
           }
         });
 
-        await audio.play().catch(() => {
-          if (gen === playbackGenRef.current && !supplantedByVideoRef.current) {
+        try {
+          await audio.play();
+        } catch (e) {
+          const name = e instanceof DOMException ? e.name : "";
+          if (name === "NotAllowedError" || name === "AbortError") {
+            soundUnlockRef.current = async () => {
+              try {
+                await audio.play();
+                setShowSoundUnlock(false);
+                setVoiceHint(null);
+                soundUnlockRef.current = null;
+              } catch {
+                /* ignore */
+              }
+            };
+            setShowSoundUnlock(true);
+            setVoiceHint(
+              "Tap Enable sound — playback was blocked until you interact.",
+            );
+          } else if (gen === playbackGenRef.current && !supplantedByVideoRef.current) {
             setSpeaking(false);
+            setVoiceHint("Could not start voice playback.");
           }
-        });
+        }
       } catch (e) {
+        setVoiceHint("Could not reach /api/speak.");
         console.warn("ElevenLabs playback error:", e);
       }
     },
@@ -500,12 +586,19 @@ export function HeliumHeroApp() {
             ))}
           </div>
 
-          <p className="font-mono-tech mt-5 flex items-center gap-2 text-[11px] tracking-wide text-zinc-500 sm:text-xs">
-            <span className="text-zinc-600">VOICE_STACK</span>
-            <span className="rounded bg-white/5 px-2 py-0.5 text-[#22d3ee]">
-              {voiceStatus}
-            </span>
-          </p>
+          <div className="mt-5 flex w-full max-w-4xl flex-col items-center gap-2">
+            <p className="font-mono-tech flex items-center gap-2 text-[11px] tracking-wide text-zinc-500 sm:text-xs">
+              <span className="text-zinc-600">VOICE_STACK</span>
+              <span className="rounded bg-white/5 px-2 py-0.5 text-[#22d3ee]">
+                {voiceStatus}
+              </span>
+            </p>
+            {voiceHint ? (
+              <p className="max-w-lg text-center font-mono-tech text-[10px] leading-relaxed text-amber-200/90 sm:text-xs">
+                {voiceHint}
+              </p>
+            ) : null}
+          </div>
         </section>
 
         <section className="mt-12 space-y-4">
@@ -589,6 +682,18 @@ export function HeliumHeroApp() {
           </div>
         </section>
       </main>
+
+      {showSoundUnlock ? (
+        <div className="fixed bottom-24 left-1/2 z-[25] w-[min(92vw,420px)] -translate-x-1/2 px-4 sm:bottom-28">
+          <button
+            type="button"
+            className="w-full rounded-xl border border-[#22d3ee]/50 bg-[#050510]/95 py-3 font-mono-tech text-xs font-semibold tracking-wide text-[#22d3ee] shadow-[0_0_24px_rgba(34,211,238,0.2)] backdrop-blur-md transition hover:bg-[#22d3ee]/10"
+            onClick={() => void soundUnlockRef.current?.()}
+          >
+            Enable sound
+          </button>
+        </div>
+      ) : null}
 
       <footer className="fixed bottom-0 left-0 right-0 z-20 border-t border-white/[0.08] bg-[#050510]/90 px-4 py-4 shadow-[0_-12px_40px_rgba(0,0,0,0.5)] backdrop-blur-2xl sm:px-8">
         <form

@@ -22,6 +22,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Expected { text: string }" }, { status: 400 });
   }
 
+  const modelId =
+    process.env.ELEVENLABS_MODEL?.trim() || "eleven_turbo_v2_5";
+
   const url = `https://api.elevenlabs.io/v1/text-to-speech/${encodeURIComponent(voiceId)}`;
   const res = await fetch(url, {
     method: "POST",
@@ -32,7 +35,7 @@ export async function POST(req: NextRequest) {
     },
     body: JSON.stringify({
       text: text.trim(),
-      model_id: "eleven_monolingual_v1",
+      model_id: modelId,
       voice_settings: { stability: 0.5, similarity_boost: 0.75 },
     }),
   });
