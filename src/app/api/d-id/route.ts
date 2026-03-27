@@ -2,25 +2,21 @@ import { NextRequest, NextResponse } from "next/server";
 
 export const maxDuration = 120;
 
-function dIdAuthHeader(): string | null {
-  const raw = process.env.D_ID_API_KEY?.trim();
-  if (!raw) return null;
-  const token = Buffer.from(raw, "utf8").toString("base64");
-  return `Basic ${token}`;
-}
-
 export async function POST(req: NextRequest) {
-  const auth = dIdAuthHeader();
-  const heroUrl = process.env.NEXT_PUBLIC_HERO_IMAGE_URL?.trim();
-  const elevenKey = process.env.ELEVENLABS_API_KEY;
-  const voiceId = process.env.ELEVENLABS_VOICE_ID;
-
-  if (!auth) {
+  const rawDidKey = process.env.D_ID_API_KEY?.trim();
+  if (!rawDidKey) {
     return NextResponse.json(
       { error: "Server missing D_ID_API_KEY" },
       { status: 500 },
     );
   }
+
+  // Store raw `email:password` in .env.local; encode once here (no double-encoding).
+  const AUTH = `Basic ${Buffer.from(rawDidKey).toString("base64")}`;
+
+  const heroUrl = process.env.NEXT_PUBLIC_HERO_IMAGE_URL?.trim();
+  const elevenKey = process.env.ELEVENLABS_API_KEY;
+  const voiceId = process.env.ELEVENLABS_VOICE_ID;
   if (!heroUrl) {
     return NextResponse.json(
       { error: "Server missing NEXT_PUBLIC_HERO_IMAGE_URL" },
@@ -58,7 +54,7 @@ export async function POST(req: NextRequest) {
   const create = await fetch("https://api.d-id.com/talks", {
     method: "POST",
     headers: {
-      Authorization: auth,
+      Authorization: AUTH,
       "Content-Type": "application/json",
       "x-api-key-external": external,
     },
@@ -99,7 +95,7 @@ export async function POST(req: NextRequest) {
     await new Promise((r) => setTimeout(r, 1500));
 
     const poll = await fetch(`https://api.d-id.com/talks/${encodeURIComponent(id)}`, {
-      headers: { Authorization: auth },
+      headers: { Authorization: AUTH },
     });
 
     if (!poll.ok) {
