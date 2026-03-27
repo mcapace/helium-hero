@@ -2,10 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
   const key = process.env.ELEVENLABS_API_KEY;
-  const voiceId = process.env.ELEVENLABS_VOICE_ID;
-  if (!key || !voiceId) {
+  if (!key) {
     return NextResponse.json(
-      { error: "Missing ELEVENLABS_API_KEY or ELEVENLABS_VOICE_ID" },
+      { error: "Missing ELEVENLABS_API_KEY" },
       { status: 500 },
     );
   }
@@ -18,8 +17,27 @@ export async function POST(req: NextRequest) {
   }
 
   const text = (body as { text?: unknown }).text;
+  const bodyVoice = (body as { voiceId?: unknown }).voiceId;
+
   if (typeof text !== "string" || text.trim().length < 1) {
     return NextResponse.json({ error: "Expected { text: string }" }, { status: 400 });
+  }
+
+  const fromBody =
+    typeof bodyVoice === "string" && bodyVoice.trim().length > 0
+      ? bodyVoice.trim()
+      : null;
+  const fromEnv = process.env.ELEVENLABS_VOICE_ID?.trim() || null;
+  const voiceId = fromBody ?? fromEnv;
+
+  if (!voiceId) {
+    return NextResponse.json(
+      {
+        error:
+          "No voice ID: send { voiceId } in the JSON body or set ELEVENLABS_VOICE_ID",
+      },
+      { status: 400 },
+    );
   }
 
   const modelId =

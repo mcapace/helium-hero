@@ -16,16 +16,15 @@ export async function POST(req: NextRequest) {
 
   const heroUrl = process.env.NEXT_PUBLIC_HERO_IMAGE_URL?.trim();
   const elevenKey = process.env.ELEVENLABS_API_KEY;
-  const voiceId = process.env.ELEVENLABS_VOICE_ID;
   if (!heroUrl) {
     return NextResponse.json(
       { error: "Server missing NEXT_PUBLIC_HERO_IMAGE_URL" },
       { status: 500 },
     );
   }
-  if (!elevenKey || !voiceId) {
+  if (!elevenKey) {
     return NextResponse.json(
-      { error: "Missing ELEVENLABS_API_KEY or ELEVENLABS_VOICE_ID for D-ID" },
+      { error: "Missing ELEVENLABS_API_KEY for D-ID" },
       { status: 500 },
     );
   }
@@ -39,6 +38,7 @@ export async function POST(req: NextRequest) {
 
   const action = (body as { action?: unknown }).action;
   const text = (body as { text?: unknown }).text;
+  const bodyVoice = (body as { voiceId?: unknown }).voiceId;
   if (action !== "talk") {
     return NextResponse.json(
       { error: 'Expected { action: "talk", text: string }' },
@@ -47,6 +47,22 @@ export async function POST(req: NextRequest) {
   }
   if (typeof text !== "string" || text.trim().length < 3) {
     return NextResponse.json({ error: "text must be at least 3 characters" }, { status: 400 });
+  }
+
+  const fromBody =
+    typeof bodyVoice === "string" && bodyVoice.trim().length > 0
+      ? bodyVoice.trim()
+      : null;
+  const fromEnv = process.env.ELEVENLABS_VOICE_ID?.trim() || null;
+  const voiceId = fromBody ?? fromEnv;
+  if (!voiceId) {
+    return NextResponse.json(
+      {
+        error:
+          "No voice ID: send { voiceId } in the JSON body or set ELEVENLABS_VOICE_ID",
+      },
+      { status: 400 },
+    );
   }
 
   const external = JSON.stringify({ elevenlabs: elevenKey });

@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 const HERO_IDLE_VIDEO = "/video/helium-hero-idle.mp4";
+const ELEVEN_VOICE_STORAGE_KEY = "helium-hero-elevenlabs-voice-id";
 
 type ChatMessage = { role: "user" | "assistant"; content: string };
 
@@ -55,8 +56,11 @@ function elevenLabsVoiceHint(
   err: { error?: string; detail?: string },
   status: number,
 ): string {
-  if (err.error?.includes("Missing ELEVENLABS") || status === 500) {
-    return "Voice offline: set ELEVENLABS_API_KEY (and ELEVENLABS_VOICE_ID) in Vercel → Env, then redeploy.";
+  if (err.error?.includes("Missing ELEVENLABS_API_KEY") || status === 500) {
+    return "Voice offline: set ELEVENLABS_API_KEY in Vercel → Env, then redeploy.";
+  }
+  if (err.error?.includes("No voice ID")) {
+    return "Set an ElevenLabs voice ID with Change voice below, or set ELEVENLABS_VOICE_ID on the server.";
   }
   const detail = typeof err.detail === "string" ? err.detail : "";
   if (
@@ -90,6 +94,9 @@ export function HeliumHeroApp() {
   const [videoLayerVisible, setVideoLayerVisible] = useState(false);
   const [voiceHint, setVoiceHint] = useState<string | null>(null);
   const [showSoundUnlock, setShowSoundUnlock] = useState(false);
+  const [elevenVoiceId, setElevenVoiceId] = useState("");
+  const [voicePanelOpen, setVoicePanelOpen] = useState(false);
+  const [voiceIdDraft, setVoiceIdDraft] = useState("");
 
   const listRef = useRef<HTMLDivElement>(null);
   const inFlightRef = useRef(false);
@@ -105,6 +112,37 @@ export function HeliumHeroApp() {
   useEffect(() => {
     threadRef.current = thread;
   }, [thread]);
+
+  useEffect(() => {
+    try {
+      const stored = localStorage
+        .getItem(ELEVEN_VOICE_STORAGE_KEY)
+        ?.trim();
+      if (stored) setElevenVoiceId(stored);
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
+  useEffect(() => {
+    if (voicePanelOpen) setVoiceIdDraft(elevenVoiceId);
+  }, [voicePanelOpen, elevenVoiceId]);
+
+  const persistVoiceId = useCallback(() => {
+    const t = voiceIdDraft.trim();
+    try {
+      if (t) {
+        localStorage.setItem(ELEVEN_VOICE_STORAGE_KEY, t);
+        setElevenVoiceId(t);
+      } else {
+        localStorage.removeItem(ELEVEN_VOICE_STORAGE_KEY);
+        setElevenVoiceId("");
+      }
+    } catch {
+      /* ignore */
+    }
+    setVoicePanelOpen(false);
+  }, [voiceIdDraft]);
 
   const scrollToBottom = useCallback(() => {
     requestAnimationFrame(() => {
@@ -223,7 +261,12 @@ export function HeliumHeroApp() {
         const res = await fetch("/api/speak", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ text }),
+          body: JSON.stringify({
+            text,
+            ...(elevenVoiceId.trim()
+              ? { voiceId: elevenVoiceId.trim() }
+              : {}),
+          }),
         });
         if (gen !== playbackGenRef.current) return;
 
@@ -311,7 +354,7 @@ export function HeliumHeroApp() {
         console.warn("ElevenLabs playback error:", e);
       }
     },
-    [stopElevenLabs],
+    [stopElevenLabs, elevenVoiceId],
   );
 
   const requestDidTalk = useCallback(
@@ -320,7 +363,13 @@ export function HeliumHeroApp() {
         const res = await fetch("/api/d-id", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ action: "talk", text }),
+          body: JSON.stringify({
+            action: "talk",
+            text,
+            ...(elevenVoiceId.trim()
+              ? { voiceId: elevenVoiceId.trim() }
+              : {}),
+          }),
         });
         const data = (await res.json()) as { videoUrl?: string; error?: string };
         if (gen !== playbackGenRef.current) return;
@@ -340,7 +389,7 @@ export function HeliumHeroApp() {
         console.warn("D-ID request error:", e);
       }
     },
-    [stopElevenLabs],
+    [stopElevenLabs, elevenVoiceId],
   );
 
   const onVideoEnded = useCallback(() => {
@@ -610,6 +659,56 @@ export function HeliumHeroApp() {
                 {voiceHint}
               </p>
             ) : null}
+            <button
+              type="button"
+              className="mt-1 font-mono-tech text-[10px] uppercase tracking-wider text-[#22d3ee]/80 underline-offset-2 hover:text-[#22d3ee] hover:underline sm:text-xs"
+              onClick={() => setVoicePanelOpen((o) => !o)}
+            >
+              {voicePanelOpen ? "Close voice settings" : "Change voice"}
+            </button>
+            {voicePanelOpen ? (
+              <div className="glass-panel mt-3 w-full max-w-md rounded-xl p-4 text-left">
+                <label
+                  htmlFor="eleven-voice-id"
+                  className="font-mono-tech text-[10px] uppercase tracking-wider text-zinc-400"
+                >
+                  ElevenLabs voice ID
+                </label>
+                <input
+                  id="eleven-voice-id"
+                  value={voiceIdDraft}
+                  onChange={(e) => setVoiceIdDraft(e.target.value)}
+                  placeholder="Paste voice ID from ElevenLabs"
+                  className="mt-2 w-full rounded-lg border border-white/15 bg-black/40 px-3 py-2 font-mono-tech text-xs text-white outline-none placeholder:text-zinc-600 focus:border-[#22d3ee]/45"
+                  autoComplete="off"
+                />
+                <p className="mt-2 text-[10px] leading-snug text-zinc-500">
+                  Save to store in this browser. Leave empty and save to use
+                  only the server default (<code className="text-zinc-400">ELEVENLABS_VOICE_ID</code>).
+                </p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={persistVoiceId}
+                    className="rounded-lg bg-gradient-to-r from-[#f472b6] to-[#22d3ee] px-4 py-2 font-mono-tech text-xs font-semibold text-[#050510]"
+                  >
+                    Save
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setVoicePanelOpen(false)}
+                    className="rounded-lg border border-white/15 px-4 py-2 font-mono-tech text-xs text-zinc-300"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            ) : null}
+            <p className="mt-2 max-w-md text-center font-mono-tech text-[9px] text-zinc-600 sm:text-[10px]">
+              {elevenVoiceId.trim()
+                ? `Browser voice: ${elevenVoiceId.slice(0, 10)}…`
+                : "Browser voice: (server default)"}
+            </p>
           </div>
         </section>
 
