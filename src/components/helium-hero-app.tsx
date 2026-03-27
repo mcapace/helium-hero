@@ -53,8 +53,8 @@ const WELCOME_MESSAGE: ChatMessage = {
 
 function AssistantBubble({ children }: { children: React.ReactNode }) {
   return (
-    <div className="max-w-[85%] rounded-2xl bg-gradient-to-br from-[#f472b6] via-[#22d3ee] to-[#a78bfa] p-[1px] shadow-[0_0_24px_rgba(34,211,238,0.15)]">
-      <div className="rounded-[0.9rem] bg-[#0c0c18]/95 px-4 py-2.5 text-sm text-zinc-100">
+    <div className="max-w-[88%] rounded-2xl bg-gradient-to-br from-[#f472b6]/90 via-[#22d3ee]/80 to-[#a78bfa]/90 p-[1px] shadow-[0_0_40px_rgba(34,211,238,0.12),0_0_1px_rgba(255,255,255,0.15)_inset]">
+      <div className="rounded-[0.9rem] bg-[#080812]/95 px-4 py-3 text-sm leading-relaxed text-zinc-100 backdrop-blur-md sm:text-[15px]">
         {children}
       </div>
     </div>
@@ -341,19 +341,37 @@ export function HeliumHeroApp() {
   return (
     <div className="relative min-h-screen overflow-x-hidden text-zinc-100">
       <div
-        className="pointer-events-none fixed inset-0 -z-10 bg-[#0a0a1a]"
+        className="pointer-events-none fixed inset-0 -z-10 bg-[#050510]"
         aria-hidden
       />
       <div
-        className="pointer-events-none fixed -left-32 top-1/4 -z-10 h-[420px] w-[420px] rounded-full bg-[radial-gradient(circle_at_30%_30%,rgba(244,114,182,0.45),transparent_60%)] blur-3xl animate-orb-a"
+        className="pointer-events-none fixed inset-0 z-0 tech-bg-grid opacity-70"
         aria-hidden
       />
       <div
-        className="pointer-events-none fixed -right-40 bottom-1/4 -z-10 h-[480px] w-[480px] rounded-full bg-[radial-gradient(circle_at_40%_40%,rgba(34,211,238,0.4),transparent_55%)] blur-[80px] animate-orb-b"
+        className="pointer-events-none fixed inset-0 z-0 tech-vignette"
         aria-hidden
       />
       <div
-        className="pointer-events-none fixed left-1/3 top-10 -z-10 h-[320px] w-[320px] -translate-x-1/2 rounded-full bg-[radial-gradient(circle,rgba(167,139,250,0.35),transparent_65%)] blur-[72px] animate-orb-a"
+        className="pointer-events-none fixed inset-0 z-0 overflow-hidden"
+        aria-hidden
+      >
+        <div className="tech-sweep absolute inset-x-0 top-0 w-full" />
+      </div>
+      <div
+        className="pointer-events-none fixed inset-0 z-0 tech-scanlines opacity-30"
+        aria-hidden
+      />
+      <div
+        className="pointer-events-none fixed -left-40 top-1/4 -z-10 h-[min(80vw,560px)] w-[min(80vw,560px)] rounded-full bg-[radial-gradient(circle_at_30%_30%,rgba(244,114,182,0.38),transparent_58%)] blur-3xl animate-orb-a"
+        aria-hidden
+      />
+      <div
+        className="pointer-events-none fixed -right-48 bottom-1/4 -z-10 h-[min(90vw,620px)] w-[min(90vw,620px)] rounded-full bg-[radial-gradient(circle_at_40%_40%,rgba(34,211,238,0.32),transparent_52%)] blur-[90px] animate-orb-b"
+        aria-hidden
+      />
+      <div
+        className="pointer-events-none fixed left-1/2 top-0 -z-10 h-[480px] w-[480px] -translate-x-1/2 rounded-full bg-[radial-gradient(circle,rgba(167,139,250,0.28),transparent_62%)] blur-[80px] animate-orb-a"
         aria-hidden
       />
 
@@ -374,33 +392,52 @@ export function HeliumHeroApp() {
         ))}
       </div>
 
-      <main className="relative z-10 mx-auto flex min-h-screen max-w-3xl flex-col px-4 pb-52 pt-8 sm:px-6 sm:pb-56 sm:pt-12">
-        <header className="mb-8 text-center">
-          <p className="mb-2 text-xs uppercase tracking-[0.35em] text-[#22d3ee]/90">
-            School science project
+      <main className="relative z-10 mx-auto flex min-h-screen max-w-6xl flex-col px-4 pb-56 pt-6 sm:px-8 sm:pb-60 sm:pt-10 lg:px-10">
+        <header className="mb-8 text-center lg:mb-10">
+          <div className="mx-auto mb-6 flex max-w-4xl items-center justify-between gap-4 border-b border-white/[0.08] pb-4 font-mono-tech text-[10px] text-zinc-500 sm:text-xs">
+            <span className="flex min-w-0 flex-1 items-center gap-2 text-left tracking-wide">
+              <span
+                className="h-2 w-2 shrink-0 rounded-full bg-[#22d3ee] shadow-[0_0_10px_#22d3ee]"
+                aria-hidden
+              />
+              <span className="truncate">
+                HE_SPECIES // INTERFACE · He · ATOMIC&nbsp;2
+              </span>
+            </span>
+            <span className="shrink-0 tabular-nums tracking-wider text-[#fbbf24]/85">
+              UPLINK · NOMINAL
+            </span>
+          </div>
+          <p className="font-mono-tech text-[10px] uppercase tracking-[0.5em] text-[#22d3ee]/75 sm:text-xs">
+            Educational neural link
           </p>
-          <h1 className="font-heading bg-gradient-to-r from-[#f472b6] via-[#22d3ee] to-[#a78bfa] bg-clip-text text-4xl font-bold tracking-tight text-transparent sm:text-5xl">
+          <h1 className="font-heading mt-3 bg-gradient-to-r from-[#f472b6] via-[#22d3ee] to-[#a78bfa] bg-clip-text text-4xl font-bold tracking-tight text-transparent sm:text-6xl md:text-7xl">
             Helium Hero
           </h1>
-          <p className="mt-3 max-w-xl mx-auto text-sm leading-relaxed text-zinc-400">
-            Meet the noble‑gas guardian of party balloons and rocket science —
-            tap a quick question or type your own.
+          <p className="mx-auto mt-4 max-w-2xl text-sm leading-relaxed text-zinc-400 sm:text-base">
+            State-of-the-art elemental persona — guardian of lift, cryogenics,
+            and the second chapter of the cosmos. Interrogate the noble gas
+            below.
           </p>
         </header>
 
         <section className="flex flex-col items-center">
           <div
-            className={`relative mx-auto h-[min(52vh,380px)] w-full max-w-[280px] rounded-3xl p-[3px] sm:max-w-[320px] ${
+            className={`relative mx-auto h-[min(76vh,920px)] w-full min-h-[440px] max-w-[min(96vw,960px)] rounded-2xl p-[2px] sm:min-h-[520px] md:rounded-3xl md:p-[3px] ${
               heroRing
                 ? "animate-hero-ring-speaking"
-                : "shadow-[0_0_0_1px_rgba(167,139,250,0.25)]"
+                : "shadow-[0_0_0_1px_rgba(34,211,238,0.15),0_24px_80px_rgba(0,0,0,0.45)]"
             }`}
           >
-            <div className="relative h-full w-full overflow-hidden rounded-[1.35rem] bg-gradient-to-br from-[#1a1a2e] to-[#0a0a1a]">
+            <div className="relative isolate h-full w-full overflow-hidden rounded-[0.9rem] bg-gradient-to-br from-[#12122a] via-[#0a0a14] to-[#050510] md:rounded-[1.4rem]">
+              <div
+                className="pointer-events-none absolute inset-0 z-[1] bg-gradient-to-t from-[#050510]/80 via-transparent to-[#22d3ee]/[0.07]"
+                aria-hidden
+              />
               {!heroBroken ? (
                 <video
                   ref={idleVideoRef}
-                  className="absolute inset-0 z-0 h-full w-full object-cover object-center rounded-[1.35rem]"
+                  className="absolute inset-0 z-0 h-full w-full scale-[1.02] object-cover object-center md:scale-100"
                   src={HERO_IDLE_VIDEO}
                   poster="/images/helium-hero.png"
                   autoPlay
@@ -430,7 +467,7 @@ export function HeliumHeroApp() {
                 ref={videoRef}
                 src={dIdVideoUrl ?? undefined}
                 playsInline
-                className={`absolute inset-0 z-10 h-full w-full object-cover object-center rounded-[1.35rem] transition-opacity duration-500 ease-out ${
+                className={`absolute inset-0 z-10 h-full w-full object-cover object-center transition-opacity duration-500 ease-out ${
                   videoLayerVisible && dIdVideoUrl
                     ? "opacity-100"
                     : "pointer-events-none opacity-0"
@@ -442,7 +479,7 @@ export function HeliumHeroApp() {
             </div>
           </div>
 
-          <div className="mt-6 grid w-full max-w-2xl grid-cols-2 gap-3 sm:grid-cols-4">
+          <div className="mt-8 grid w-full max-w-4xl grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
             {[
               { k: "Symbol", v: "He" },
               { k: "Atomic No.", v: "2" },
@@ -451,34 +488,38 @@ export function HeliumHeroApp() {
             ].map((s) => (
               <div
                 key={s.k}
-                className="rounded-2xl border border-white/10 bg-black/35 px-4 py-3 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] backdrop-blur-md"
+                className="glass-panel rounded-xl px-4 py-4 text-center transition hover:border-[#22d3ee]/25"
               >
-                <p className="text-[10px] font-medium uppercase tracking-wider text-zinc-500">
+                <p className="font-mono-tech text-[9px] uppercase tracking-[0.2em] text-zinc-500 sm:text-[10px]">
                   {s.k}
                 </p>
-                <p className="mt-1 font-heading text-lg text-[#fbbf24]">{s.v}</p>
+                <p className="mt-2 font-heading text-xl text-[#fbbf24] sm:text-2xl">
+                  {s.v}
+                </p>
               </div>
             ))}
           </div>
 
-          <p className="mt-4 text-xs text-zinc-500">
-            Voice:{" "}
-            <span className="text-[#22d3ee]">{voiceStatus}</span>
+          <p className="font-mono-tech mt-5 flex items-center gap-2 text-[11px] tracking-wide text-zinc-500 sm:text-xs">
+            <span className="text-zinc-600">VOICE_STACK</span>
+            <span className="rounded bg-white/5 px-2 py-0.5 text-[#22d3ee]">
+              {voiceStatus}
+            </span>
           </p>
         </section>
 
-        <section className="mt-10 space-y-3">
-          <h2 className="font-heading text-center text-sm uppercase tracking-[0.2em] text-zinc-500">
-            Quick questions
+        <section className="mt-12 space-y-4">
+          <h2 className="font-mono-tech text-center text-[10px] uppercase tracking-[0.35em] text-zinc-500 sm:text-xs">
+            Preset queries
           </h2>
-          <div className="flex flex-wrap justify-center gap-2">
+          <div className="flex flex-wrap justify-center gap-2.5 sm:gap-3">
             {QUICK_PROMPTS.map((q) => (
               <button
                 key={q.label}
                 type="button"
                 disabled={loading}
                 onClick={() => void sendChat(q.text)}
-                className="rounded-full border border-white/15 bg-white/5 px-4 py-2 text-sm text-zinc-200 backdrop-blur transition hover:border-[#f472b6]/50 hover:bg-[#f472b6]/10 disabled:opacity-50"
+                className="rounded-lg border border-white/10 bg-white/[0.04] px-4 py-2.5 text-sm text-zinc-200 shadow-[0_0_20px_rgba(0,0,0,0.2)] backdrop-blur-sm transition hover:border-[#22d3ee]/40 hover:bg-[#22d3ee]/10 hover:shadow-[0_0_24px_rgba(34,211,238,0.12)] disabled:opacity-50 sm:px-5"
               >
                 {q.label}
               </button>
@@ -488,7 +529,7 @@ export function HeliumHeroApp() {
 
         <section
           ref={listRef}
-          className="mt-8 flex h-[300px] flex-col gap-3 overflow-y-auto rounded-2xl border border-white/10 bg-black/25 p-4 backdrop-blur-md"
+          className="glass-panel mt-10 flex h-[min(380px,48vh)] flex-col gap-3 overflow-y-auto rounded-2xl p-4 sm:h-[420px] sm:p-5"
         >
           <div className="animate-slide-in-msg flex justify-start">
             <AssistantBubble>{WELCOME_MESSAGE.content}</AssistantBubble>
@@ -499,7 +540,7 @@ export function HeliumHeroApp() {
               className={`animate-slide-in-msg flex ${m.role === "user" ? "justify-end" : "justify-start"}`}
             >
               {m.role === "user" ? (
-                <div className="max-w-[85%] rounded-2xl rounded-br-md border border-white/20 bg-white/10 px-4 py-2.5 text-sm text-white shadow-lg">
+                <div className="max-w-[85%] rounded-2xl rounded-br-md border border-white/[0.12] bg-white/[0.07] px-4 py-3 text-sm text-white shadow-lg backdrop-blur-sm sm:text-[15px]">
                   {m.content}
                 </div>
               ) : (
@@ -508,8 +549,8 @@ export function HeliumHeroApp() {
             </div>
           ))}
           {loading && (
-            <div className="flex justify-start animate-slide-in-msg">
-              <div className="flex items-center gap-1 rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
+              <div className="flex justify-start animate-slide-in-msg">
+              <div className="flex items-center gap-1 rounded-xl border border-white/10 bg-white/[0.06] px-4 py-3 backdrop-blur-sm">
                 <span className="h-2 w-2 rounded-full bg-[#f472b6] animate-typing-dot" />
                 <span
                   className="h-2 w-2 rounded-full bg-[#22d3ee] animate-typing-dot"
@@ -524,20 +565,23 @@ export function HeliumHeroApp() {
           )}
         </section>
 
-        <section className="mt-12">
-          <h2 className="font-heading text-center text-lg text-[#fbbf24]">
-            Fast facts
+        <section className="mt-14">
+          <h2 className="font-mono-tech text-center text-[10px] uppercase tracking-[0.4em] text-zinc-500 sm:text-xs">
+            Knowledge matrix
           </h2>
-          <div className="mt-6 grid gap-4 sm:grid-cols-2">
+          <p className="font-heading mt-2 text-center text-lg text-[#fbbf24] sm:text-xl">
+            Fast facts
+          </p>
+          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:gap-5">
             {FAST_FACTS.map((f) => (
               <article
                 key={f.title}
-                className="rounded-2xl border border-white/10 bg-black/40 p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]"
+                className="glass-panel group rounded-2xl p-5 transition hover:border-[#a78bfa]/30 sm:p-6"
               >
-                <h3 className="font-heading text-sm font-semibold text-[#fbbf24]">
+                <h3 className="font-heading text-sm font-semibold text-[#fbbf24] sm:text-base">
                   {f.title}
                 </h3>
-                <p className="mt-2 text-sm leading-relaxed text-zinc-400">
+                <p className="mt-2 text-sm leading-relaxed text-zinc-400 sm:text-[15px]">
                   {f.body}
                 </p>
               </article>
@@ -546,23 +590,23 @@ export function HeliumHeroApp() {
         </section>
       </main>
 
-      <footer className="fixed bottom-0 left-0 right-0 z-20 border-t border-white/10 bg-[#0a0a1a]/85 px-4 py-3 backdrop-blur-xl sm:px-6">
+      <footer className="fixed bottom-0 left-0 right-0 z-20 border-t border-white/[0.08] bg-[#050510]/90 px-4 py-4 shadow-[0_-12px_40px_rgba(0,0,0,0.5)] backdrop-blur-2xl sm:px-8">
         <form
           onSubmit={onSubmit}
-          className="mx-auto flex max-w-3xl gap-2"
+          className="mx-auto flex max-w-6xl gap-3"
         >
           <input
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Ask Helium Hero anything..."
-            className="min-w-0 flex-1 rounded-full border border-white/15 bg-black/50 px-5 py-3 text-sm text-white outline-none ring-[#22d3ee]/0 transition placeholder:text-zinc-500 focus:border-[#22d3ee]/50 focus:ring-2 focus:ring-[#22d3ee]/30"
+            placeholder="Transmit query to Helium Hero…"
+            className="font-mono-tech min-w-0 flex-1 rounded-xl border border-white/12 bg-white/[0.04] px-5 py-3.5 text-sm text-white outline-none transition placeholder:text-zinc-600 focus:border-[#22d3ee]/45 focus:ring-2 focus:ring-[#22d3ee]/20 sm:text-[15px]"
             disabled={loading}
             aria-label="Message to Helium Hero"
           />
           <button
             type="submit"
             disabled={loading || !input.trim()}
-            className="shrink-0 rounded-full bg-gradient-to-r from-[#f472b6] to-[#22d3ee] px-6 py-3 text-sm font-semibold text-[#0a0a1a] shadow-lg transition hover:brightness-110 disabled:opacity-40"
+            className="shrink-0 rounded-xl bg-gradient-to-r from-[#f472b6] via-[#a78bfa] to-[#22d3ee] px-7 py-3.5 text-sm font-bold tracking-wide text-[#050510] shadow-[0_0_28px_rgba(34,211,238,0.25)] transition hover:brightness-110 disabled:opacity-40"
           >
             Send
           </button>
