@@ -1,26 +1,115 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --bg-deep: #0a0a1a;
+  --pink: #f472b6;
+  --teal: #22d3ee;
+  --purple: #a78bfa;
+  --gold: #fbbf24;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--bg-deep);
+}
+
+@keyframes float-balloon {
+  0% {
+    transform: translateY(110vh) translateX(0) rotate(-6deg);
+    opacity: 0;
+  }
+  8% {
+    opacity: 0.85;
+  }
+  100% {
+    transform: translateY(-25vh) translateX(18px) rotate(8deg);
+    opacity: 0;
+  }
+}
+
+@keyframes orb-drift-a {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(30px, -24px) scale(1.05);
+  }
+}
+
+@keyframes orb-drift-b {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(-40px, 20px) scale(1.08);
+  }
+}
+
+@keyframes slide-in-msg {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes hero-ring-pulse {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 2px rgba(244, 114, 182, 0.45),
+      0 0 32px rgba(34, 211, 238, 0.35),
+      0 0 56px rgba(167, 139, 250, 0.25);
+  }
+  50% {
+    box-shadow:
+      0 0 0 4px rgba(251, 191, 36, 0.55),
+      0 0 48px rgba(244, 114, 182, 0.45),
+      0 0 80px rgba(34, 211, 238, 0.35);
+  }
+}
+
+@keyframes typing-bounce {
+  0%,
+  80%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.35;
+  }
+  40% {
+    transform: translateY(-4px);
+    opacity: 1;
+  }
+}
+
+.animate-float-balloon {
+  animation: float-balloon linear infinite;
+}
+
+.animate-orb-a {
+  animation: orb-drift-a 22s ease-in-out infinite;
+}
+
+.animate-orb-b {
+  animation: orb-drift-b 28s ease-in-out infinite;
+}
+
+.animate-slide-in-msg {
+  animation: slide-in-msg 0.45s ease-out both;
+}
+
+.animate-hero-ring-speaking {
+  animation: hero-ring-pulse 1.6s ease-in-out infinite;
+}
+
+.animate-typing-dot {
+  animation: typing-bounce 1s ease-in-out infinite;
+}
+
+.font-heading {
+  font-family: var(--font-orbitron), system-ui, sans-serif;
 }
