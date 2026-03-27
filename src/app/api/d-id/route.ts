@@ -39,6 +39,11 @@ export async function POST(req: NextRequest) {
 
   const action = (body as { action?: unknown }).action;
   const text = (body as { text?: unknown }).text;
+  const clientVoiceId = (body as { voiceId?: unknown }).voiceId;
+  const resolvedVoiceId =
+    typeof clientVoiceId === "string" && clientVoiceId.trim()
+      ? clientVoiceId.trim()
+      : voiceId;
   if (action !== "talk") {
     return NextResponse.json(
       { error: 'Expected { action: "talk", text: string }' },
@@ -65,7 +70,7 @@ export async function POST(req: NextRequest) {
         input: text.trim(),
         provider: {
           type: "elevenlabs",
-          voice_id: voiceId,
+          voice_id: resolvedVoiceId,
           voice_config: { stability: 0.5, similarity_boost: 0.75 },
         },
       },

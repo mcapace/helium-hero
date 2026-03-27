@@ -72,6 +72,13 @@ export function HeliumHeroApp() {
   const [videoLayerVisible, setVideoLayerVisible] = useState(false);
   const [voiceHint, setVoiceHint] = useState<string | null>(null);
   const [showSoundUnlock, setShowSoundUnlock] = useState(false);
+  const [customVoiceId, setCustomVoiceId] = useState("");
+  const [showVoiceInput, setShowVoiceInput] = useState(false);
+
+  useEffect(() => {
+    const saved = localStorage.getItem("elevenlabs_voice_id");
+    if (saved) setCustomVoiceId(saved);
+  }, []);
 
   const listRef = useRef<HTMLDivElement>(null);
   const inFlightRef = useRef(false);
@@ -202,10 +209,17 @@ export function HeliumHeroApp() {
     async (text: string, gen: number) => {
       supplantedByVideoRef.current = false;
       try {
+        const storedVoiceId =
+          typeof window !== "undefined"
+            ? localStorage.getItem("elevenlabs_voice_id")
+            : null;
         const res = await fetch("/api/speak", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ text }),
+          body: JSON.stringify({
+            text,
+            ...(storedVoiceId ? { voiceId: storedVoiceId } : {}),
+          }),
         });
         if (gen !== playbackGenRef.current) return;
 
@@ -305,10 +319,18 @@ export function HeliumHeroApp() {
   const requestDidTalk = useCallback(
     async (text: string, gen: number) => {
       try {
+        const storedVoiceId =
+          typeof window !== "undefined"
+            ? localStorage.getItem("elevenlabs_voice_id")
+            : null;
         const res = await fetch("/api/d-id", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ action: "talk", text }),
+          body: JSON.stringify({
+            action: "talk",
+            text,
+            ...(storedVoiceId ? { voiceId: storedVoiceId } : {}),
+          }),
         });
         const data = (await res.json()) as { videoUrl?: string; error?: string };
         if (gen !== playbackGenRef.current) return;
@@ -598,6 +620,44 @@ export function HeliumHeroApp() {
                 {voiceHint}
               </p>
             ) : null}
+            <button
+              type="button"
+              onClick={() => setShowVoiceInput((v) => !v)}
+              className="mt-1 font-mono-tech text-[10px] text-zinc-500 underline decoration-zinc-700 underline-offset-2 transition hover:text-[#22d3ee] sm:text-[11px]"
+            >
+              {showVoiceInput ? "Hide voice settings" : "Change voice"}
+            </button>
+            {showVoiceInput && (
+              <div className="mt-2 flex items-center gap-2">
+                <input
+                  type="text"
+                  value={customVoiceId}
+                  onChange={(e) => setCustomVoiceId(e.target.value)}
+                  placeholder="ElevenLabs Voice ID"
+                  className="font-mono-tech w-56 rounded-lg border border-white/10 bg-white/[0.04] px-3 py-1.5 text-[11px] text-white outline-none placeholder:text-zinc-600 focus:border-[#22d3ee]/40 sm:w-64"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    const id = customVoiceId.trim();
+                    if (id) {
+                      localStorage.setItem("elevenlabs_voice_id", id);
+                    } else {
+                      localStorage.removeItem("elevenlabs_voice_id");
+                    }
+                    setShowVoiceInput(false);
+                    setVoiceHint(
+                      id
+                        ? `Voice updated: ${id.slice(0, 12)}…`
+                        : "Using default voice",
+                    );
+                  }}
+                  className="shrink-0 rounded-lg bg-[#22d3ee]/15 px-3 py-1.5 font-mono-tech text-[11px] font-semibold text-[#22d3ee] transition hover:bg-[#22d3ee]/25"
+                >
+                  Save
+                </button>
+              </div>
+            )}
           </div>
         </section>
 

@@ -18,14 +18,20 @@ export async function POST(req: NextRequest) {
   }
 
   const text = (body as { text?: unknown }).text;
+  const clientVoiceId = (body as { voiceId?: unknown }).voiceId;
   if (typeof text !== "string" || text.trim().length < 1) {
     return NextResponse.json({ error: "Expected { text: string }" }, { status: 400 });
   }
 
+  const resolvedVoiceId =
+    typeof clientVoiceId === "string" && clientVoiceId.trim()
+      ? clientVoiceId.trim()
+      : voiceId;
+
   const modelId =
     process.env.ELEVENLABS_MODEL?.trim() || "eleven_turbo_v2_5";
 
-  const url = `https://api.elevenlabs.io/v1/text-to-speech/${encodeURIComponent(voiceId)}`;
+  const url = `https://api.elevenlabs.io/v1/text-to-speech/${encodeURIComponent(resolvedVoiceId)}`;
   const res = await fetch(url, {
     method: "POST",
     headers: {
