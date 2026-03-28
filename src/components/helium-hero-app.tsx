@@ -995,8 +995,8 @@ export function HeliumHeroApp() {
             >
               {/* Left column: portrait + info */}
               <div className="space-y-6">
-              <div className="flex flex-col items-center gap-6 lg:items-start">
-              <div className="flex flex-col items-center gap-4 md:items-start">
+              <div className="flex flex-col gap-6">
+              <div className="flex flex-col gap-4">
                 <div
                   role="region"
                   aria-label={
@@ -1004,7 +1004,7 @@ export function HeliumHeroApp() {
                       ? "Helium Hero is speaking — glowing portrait frame"
                       : "Helium Hero video frame"
                   }
-                  className={`relative w-full max-w-[min(92vw,400px)] rounded-[0.875rem] border border-[var(--border)] ${heroRing ? "hero-portrait-speaking" : "hero-glow-idle"}`}
+                  className={`relative w-full rounded-[0.875rem] border border-[var(--border)] ${heroRing ? "hero-portrait-speaking" : "hero-glow-idle"}`}
                 >
                   <span
                     className="pointer-events-none absolute left-2 top-2 z-20 h-3.5 w-3.5 border-l-2 border-t-2 border-[var(--blue)]"
