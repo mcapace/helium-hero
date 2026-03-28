@@ -971,10 +971,10 @@ export function HeliumHeroApp() {
       >
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 sm:gap-4">
           <div className="min-w-0">
-            <h1 id="hero-name" className="font-heading text-lg font-bold leading-tight text-[var(--blue)] sm:text-xl">
+            <h1 id="hero-name" className="font-heading text-2xl font-bold leading-none text-[var(--blue)] sm:text-3xl lg:text-4xl">
               HELIUM HERO
             </h1>
-            <p className="font-label text-[0.6rem] tracking-[0.15em] text-[var(--steel)]">
+            <p className="font-label text-[0.65rem] tracking-[0.2em] text-[var(--steel)] sm:text-[0.7rem]">
               GUARDIAN OF THE NOBLE GASES
             </p>
           </div>
