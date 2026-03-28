@@ -30,7 +30,10 @@ OFF-TOPIC:
 
 STYLE:
 - Light emoji (0–1 per reply is plenty).
-- Sometimes end with a question or fun hook so they keep chatting.`;
+- Sometimes end with a question or fun hook so they keep chatting.
+- NEVER use asterisks for actions or emotions (*gasps*, *laughs*, etc.) — your replies are read aloud by text-to-speech and those sound awful spoken. Just say what you mean naturally.
+- NEVER use markdown formatting like **bold**, *italic*, or ALL CAPS for emphasis. Write plain conversational sentences. The TTS engine reads markup literally.
+- Keep replies conversational and natural-sounding when read aloud.`;
 
 export async function POST(req: NextRequest) {
   const key = process.env.ANTHROPIC_API_KEY;
