@@ -940,8 +940,8 @@ export function HeliumHeroApp() {
         aria-hidden
       />
 
-      {/* Scan line */}
-      <div className="scan-line z-[1]" aria-hidden />
+      {/* Scan line — behind content */}
+      <div className="scan-line z-0" aria-hidden />
 
       {/* Gas particles */}
       <div
@@ -1006,7 +1006,7 @@ export function HeliumHeroApp() {
                       ? "Helium Hero is speaking — glowing portrait frame"
                       : "Helium Hero video frame"
                   }
-                  className={`relative w-[min(92vw,200px)] shrink-0 rounded-[0.875rem] border border-[var(--border)] sm:w-[220px] md:h-[calc(260px*4/3)] md:w-[260px] md:max-w-none ${heroRing ? "hero-portrait-speaking" : "hero-glow-idle"}`}
+                  className={`relative w-[min(92vw,280px)] shrink-0 rounded-[0.875rem] border border-[var(--border)] sm:w-[300px] md:w-[340px] lg:w-full lg:max-w-[400px] md:max-w-none ${heroRing ? "hero-portrait-speaking" : "hero-glow-idle"}`}
                 >
                   <span
                     className="pointer-events-none absolute left-2 top-2 z-20 h-3.5 w-3.5 border-l-2 border-t-2 border-[var(--blue)]"
@@ -1025,7 +1025,7 @@ export function HeliumHeroApp() {
                     aria-hidden
                   />
 
-                  <div className="relative isolate aspect-square h-full min-h-[200px] w-full overflow-hidden bg-[#0a1218] md:aspect-auto md:h-full md:min-h-0">
+                  <div className="relative isolate aspect-[3/4] min-h-[260px] w-full overflow-hidden bg-[#0a1218]">
                     {!heroBroken ? (
                       <video
                         ref={idleVideoRef}
