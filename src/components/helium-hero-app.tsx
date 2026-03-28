@@ -720,6 +720,27 @@ export function HeliumHeroApp() {
                 </div>
               </div>
             )}
+            {/* Element stats — below hero video */}
+            <div className="mt-3 grid grid-cols-4 gap-2 lg:mt-4">
+              {[
+                { k: "Symbol", v: "He" },
+                { k: "Atomic No.", v: "2" },
+                { k: "State", v: "Gas" },
+                { k: "Group", v: "Noble" },
+              ].map((s) => (
+                <div
+                  key={s.k}
+                  className="glass-panel rounded-lg px-2 py-2 text-center"
+                >
+                  <p className="font-mono-tech text-[10px] uppercase tracking-wider text-zinc-500 sm:text-xs">
+                    {s.k}
+                  </p>
+                  <p className="font-heading text-base text-[#fbbf24] sm:text-lg">
+                    {s.v}
+                  </p>
+                </div>
+              ))}
+            </div>
           </section>
 
           {/* Right column — Chat */}
