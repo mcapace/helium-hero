@@ -9,7 +9,6 @@ import { playMp3FromReadableStream } from "@/lib/play-mp3-mse";
 
 const HERO_IDLE_VIDEO =
   "/video/duplexnyc_Helium_Hero_full_body_superhero_standing_heroic_pos_a50e06aa-8550-4525-82a3-32a1887d542f_0.mp4";
-const ELEVEN_VOICE_STORAGE_KEY = "helium-hero-elevenlabs-voice-id";
 
 type ChatMessage = { role: "user" | "assistant"; content: string };
 
@@ -185,7 +184,7 @@ function elevenLabsVoiceHint(
     return "Voice offline: set ELEVENLABS_API_KEY in Vercel → Env, then redeploy.";
   }
   if (err.error?.includes("No voice ID")) {
-    return "Set an ElevenLabs voice ID with Change voice below, or set ELEVENLABS_VOICE_ID on the server.";
+    return "Server needs ELEVENLABS_VOICE_ID or a valid default voice in code — check Vercel env and redeploy.";
   }
   const detail = typeof err.detail === "string" ? err.detail : "";
   if (
@@ -217,9 +216,6 @@ export function HeliumHeroApp() {
   const [videoLayerVisible, setVideoLayerVisible] = useState(false);
   const [voiceHint, setVoiceHint] = useState<string | null>(null);
   const [showSoundUnlock, setShowSoundUnlock] = useState(false);
-  const [elevenVoiceId, setElevenVoiceId] = useState("");
-  const [voicePanelOpen, setVoicePanelOpen] = useState(false);
-  const [voiceIdDraft, setVoiceIdDraft] = useState("");
 
   const listRef = useRef<HTMLDivElement>(null);
   const inFlightRef = useRef(false);
@@ -244,36 +240,14 @@ export function HeliumHeroApp() {
     threadRef.current = thread;
   }, [thread]);
 
+  /** Drop legacy override so TTS always uses server ELEVENLABS_VOICE_ID / default. */
   useEffect(() => {
     try {
-      const stored = localStorage
-        .getItem(ELEVEN_VOICE_STORAGE_KEY)
-        ?.trim();
-      if (stored) setElevenVoiceId(stored);
+      localStorage.removeItem("helium-hero-elevenlabs-voice-id");
     } catch {
       /* ignore */
     }
   }, []);
-
-  useEffect(() => {
-    if (voicePanelOpen) setVoiceIdDraft(elevenVoiceId);
-  }, [voicePanelOpen, elevenVoiceId]);
-
-  const persistVoiceId = useCallback(() => {
-    const t = voiceIdDraft.trim();
-    try {
-      if (t) {
-        localStorage.setItem(ELEVEN_VOICE_STORAGE_KEY, t);
-        setElevenVoiceId(t);
-      } else {
-        localStorage.removeItem(ELEVEN_VOICE_STORAGE_KEY);
-        setElevenVoiceId("");
-      }
-    } catch {
-      /* ignore */
-    }
-    setVoicePanelOpen(false);
-  }, [voiceIdDraft]);
 
   const scrollToBottom = useCallback(() => {
     requestAnimationFrame(() => {
@@ -579,12 +553,7 @@ export function HeliumHeroApp() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           signal,
-          body: JSON.stringify({
-            text,
-            ...(elevenVoiceId.trim()
-              ? { voiceId: elevenVoiceId.trim() }
-              : {}),
-          }),
+          body: JSON.stringify({ text }),
         });
         if (gen !== playbackGenRef.current) return;
         if (signal.aborted) return;
@@ -677,7 +646,7 @@ export function HeliumHeroApp() {
         console.warn("ElevenLabs playback error:", e);
       }
     },
-    [stopElevenLabs, elevenVoiceId],
+    [stopElevenLabs],
   );
 
   const requestDidTalk = useCallback(
@@ -690,9 +659,6 @@ export function HeliumHeroApp() {
           body: JSON.stringify({
             action: "talk",
             text,
-            ...(elevenVoiceId.trim()
-              ? { voiceId: elevenVoiceId.trim() }
-              : {}),
           }),
         });
         if (signal.aborted) return;
@@ -715,7 +681,7 @@ export function HeliumHeroApp() {
         console.warn("D-ID request error:", e);
       }
     },
-    [stopElevenLabs, elevenVoiceId],
+    [stopElevenLabs],
   );
 
   const onVideoEnded = useCallback(() => {
@@ -1075,8 +1041,8 @@ export function HeliumHeroApp() {
                     </span>
                   </div>
 
-                  <div className="font-label flex flex-wrap items-center gap-2 text-[0.68rem] text-[var(--muted)]">
-                    {loading || speaking ? (
+                  {loading || speaking ? (
+                    <div className="font-label flex flex-wrap items-center gap-2 text-[0.68rem] text-[var(--muted)]">
                       <button
                         type="button"
                         aria-label="Stop response and voice"
@@ -1085,66 +1051,13 @@ export function HeliumHeroApp() {
                       >
                         Stop
                       </button>
-                    ) : null}
-                    <button
-                      type="button"
-                      className={`text-[var(--blue)] underline-offset-2 hover:underline ${FOCUS_VISIBLE_RING}`}
-                      onClick={() => setVoicePanelOpen((o) => !o)}
-                    >
-                      {voicePanelOpen ? "Close" : "Change voice"}
-                    </button>
-                  </div>
+                    </div>
+                  ) : null}
                   {voiceHint ? (
                     <p className="font-label text-[0.65rem] leading-relaxed text-amber-200/90">
                       {voiceHint}
                     </p>
                   ) : null}
-                  {voicePanelOpen ? (
-                    <div className="surface-card rounded-lg p-3 text-left">
-                      <label
-                        htmlFor="eleven-voice-id"
-                        className="font-label text-[0.65rem] uppercase tracking-wider text-[var(--steel)]"
-                      >
-                        ElevenLabs voice ID
-                      </label>
-                      <input
-                        id="eleven-voice-id"
-                        value={voiceIdDraft}
-                        onChange={(e) => setVoiceIdDraft(e.target.value)}
-                        placeholder="Paste voice ID"
-                        className={`font-label mt-2 w-full rounded-md border border-[var(--border)] bg-[rgba(255,255,255,0.04)] px-3 py-2 text-xs text-[var(--white)] outline-none placeholder:text-[var(--dim)] focus:border-[rgba(168,216,240,0.38)] ${FOCUS_VISIBLE_RING}`}
-                        autoComplete="off"
-                      />
-                      <p className="font-body mt-2 text-xs font-light leading-snug text-[var(--dim)]">
-                        Empty + Save uses server{" "}
-                        <code className="text-[var(--steel)]">
-                          ELEVENLABS_VOICE_ID
-                        </code>
-                        .
-                      </p>
-                      <div className="mt-2 flex flex-wrap gap-2">
-                        <button
-                          type="button"
-                          onClick={persistVoiceId}
-                          className={`font-heading rounded-md bg-[rgba(168,216,240,0.12)] px-3 py-1.5 text-xs font-semibold text-[var(--blue)] ring-1 ring-[rgba(168,216,240,0.28)] ${FOCUS_VISIBLE_RING}`}
-                        >
-                          Save
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setVoicePanelOpen(false)}
-                          className={`font-label rounded-md border border-[var(--border)] px-3 py-1.5 text-xs text-[var(--dim)] ${FOCUS_VISIBLE_RING}`}
-                        >
-                          Cancel
-                        </button>
-                      </div>
-                    </div>
-                  ) : null}
-                  <p className="font-label text-[0.6rem] text-[var(--steel)]">
-                    {elevenVoiceId.trim()
-                      ? `Saved: ${elevenVoiceId.slice(0, 10)}…`
-                      : "Voice ID: server default"}
-                  </p>
                 </div>
               </div>
 
