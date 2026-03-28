@@ -835,10 +835,12 @@ export function HeliumHeroApp() {
           headers: { "Content-Type": "application/json" },
           signal,
           body: JSON.stringify({
-            messages: nextMessages.map((m) => ({
-              role: m.role,
-              content: m.content,
-            })),
+            messages: nextMessages
+              .slice(nextMessages.findIndex((m) => m.role === "user"))
+              .map((m) => ({
+                role: m.role,
+                content: m.content,
+              })),
           }),
         });
         if (signal.aborted) return;
