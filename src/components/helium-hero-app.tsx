@@ -996,7 +996,7 @@ export function HeliumHeroApp() {
             {/* ── Top section: hero info + chat side-by-side on lg ── */}
             <section
               aria-labelledby="hero-name"
-              className="grid gap-6 lg:grid-cols-[minmax(320px,2fr)_minmax(400px,3fr)] lg:items-start lg:gap-8"
+              className="grid gap-6 lg:grid-cols-2 lg:items-start lg:gap-8"
             >
               {/* Left column: title + portrait + info */}
               <div className="space-y-6">
