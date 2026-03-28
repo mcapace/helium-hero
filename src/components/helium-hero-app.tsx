@@ -970,9 +970,14 @@ export function HeliumHeroApp() {
         aria-label="Site"
       >
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 sm:gap-4">
-          <p className="font-label min-w-0 text-[0.68rem] leading-snug tracking-wide text-[var(--steel)] sm:text-[0.7rem]">
-            ELEMENT DATABASE // NOBLE GAS SERIES
-          </p>
+          <div className="min-w-0">
+            <h1 id="hero-name" className="font-heading text-lg font-bold leading-tight text-[var(--blue)] sm:text-xl">
+              HELIUM HERO
+            </h1>
+            <p className="font-label text-[0.6rem] tracking-[0.15em] text-[var(--steel)]">
+              GUARDIAN OF THE NOBLE GASES
+            </p>
+          </div>
           <div className="flex shrink-0 items-center gap-2 sm:gap-3">
             <a
               href="#helium-chat"
@@ -995,21 +1000,6 @@ export function HeliumHeroApp() {
             >
               {/* Left column: title + portrait + info */}
               <div className="space-y-6">
-              <div className="min-w-0 space-y-4 text-center md:text-left">
-                <p className="font-label text-[0.6rem] tracking-[0.2em] text-[var(--steel)]">
-                  GUARDIAN OF THE NOBLE GASES
-                </p>
-                <h1
-                  id="hero-name"
-                  className="font-heading text-[clamp(2.6rem,6vw,4.2rem)] max-[640px]:text-[2.6rem] font-bold leading-[0.9] text-[var(--blue)]"
-                >
-                  <span className="block">HELIUM</span>
-                  <span className="block">HERO</span>
-                </h1>
-                <p className="font-body mx-auto max-w-xl text-[0.94rem] font-normal leading-[1.6] text-[var(--muted)] md:mx-0">
-                  Chat with the noble gas — explore helium through conversation.
-                </p>
-              </div>
               <div className="flex flex-col gap-6">
               <div className="flex flex-col gap-4">
                 <div
