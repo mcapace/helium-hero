@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
+import { DEFAULT_ELEVENLABS_VOICE_ID } from "@/lib/default-voice";
 
 export async function POST(req: NextRequest) {
   const key = process.env.ELEVENLABS_API_KEY;
-  const voiceId = process.env.ELEVENLABS_VOICE_ID;
-  if (!key || !voiceId) {
+  if (!key) {
     return NextResponse.json(
-      { error: "Missing ELEVENLABS_API_KEY or ELEVENLABS_VOICE_ID" },
+      { error: "Missing ELEVENLABS_API_KEY" },
       { status: 500 },
     );
   }
@@ -18,22 +18,33 @@ export async function POST(req: NextRequest) {
   }
 
   const text = (body as { text?: unknown }).text;
-  const clientVoiceId = (body as { voiceId?: unknown }).voiceId;
+  const bodyVoice = (body as { voiceId?: unknown }).voiceId;
+
   if (typeof text !== "string" || text.trim().length < 1) {
-    return NextResponse.json({ error: "Expected { text: string }" }, { status: 400 });
+    return NextResponse.json(
+      { error: "Expected { text: string }" },
+      { status: 400 },
+    );
   }
 
-  const resolvedVoiceId =
-    typeof clientVoiceId === "string" && clientVoiceId.trim()
-      ? clientVoiceId.trim()
-      : voiceId;
+  const fromBody =
+    typeof bodyVoice === "string" && bodyVoice.trim().length > 0
+      ? bodyVoice.trim()
+      : null;
+  const fromEnv =
+    process.env.ELEVENLABS_VOICE_ID?.trim() || DEFAULT_ELEVENLABS_VOICE_ID;
+  const voiceId = fromBody ?? fromEnv;
 
   const modelId =
     process.env.ELEVENLABS_MODEL?.trim() || "eleven_flash_v2_5";
 
-  // Use the streaming endpoint for lower time-to-first-byte
-  const url = `https://api.elevenlabs.io/v1/text-to-speech/${encodeURIComponent(resolvedVoiceId)}/stream`;
-  const res = await fetch(url, {
+  const streamUrl = new URL(
+    `https://api.elevenlabs.io/v1/text-to-speech/${encodeURIComponent(voiceId)}/stream`,
+  );
+  streamUrl.searchParams.set("optimize_streaming_latency", "3");
+  streamUrl.searchParams.set("output_format", "mp3_44100_128");
+
+  const res = await fetch(streamUrl.toString(), {
     method: "POST",
     headers: {
       "xi-api-key": key,
@@ -44,7 +55,6 @@ export async function POST(req: NextRequest) {
       text: text.trim(),
       model_id: modelId,
       voice_settings: { stability: 0.5, similarity_boost: 0.75 },
-      optimize_streaming_latency: 3,
     }),
   });
 
@@ -56,12 +66,17 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // Stream audio chunks back to the client
+  if (!res.body) {
+    return NextResponse.json(
+      { error: "No audio stream from ElevenLabs" },
+      { status: 502 },
+    );
+  }
+
   return new NextResponse(res.body, {
     headers: {
       "Content-Type": "audio/mpeg",
       "Cache-Control": "no-store",
-      "Transfer-Encoding": "chunked",
     },
   });
 }

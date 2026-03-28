@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { DEFAULT_ELEVENLABS_VOICE_ID } from "@/lib/default-voice";
 
 export const maxDuration = 120;
 
@@ -16,16 +17,15 @@ export async function POST(req: NextRequest) {
 
   const heroUrl = process.env.NEXT_PUBLIC_HERO_IMAGE_URL?.trim();
   const elevenKey = process.env.ELEVENLABS_API_KEY;
-  const voiceId = process.env.ELEVENLABS_VOICE_ID;
   if (!heroUrl) {
     return NextResponse.json(
       { error: "Server missing NEXT_PUBLIC_HERO_IMAGE_URL" },
       { status: 500 },
     );
   }
-  if (!elevenKey || !voiceId) {
+  if (!elevenKey) {
     return NextResponse.json(
-      { error: "Missing ELEVENLABS_API_KEY or ELEVENLABS_VOICE_ID for D-ID" },
+      { error: "Missing ELEVENLABS_API_KEY for D-ID" },
       { status: 500 },
     );
   }
@@ -39,11 +39,7 @@ export async function POST(req: NextRequest) {
 
   const action = (body as { action?: unknown }).action;
   const text = (body as { text?: unknown }).text;
-  const clientVoiceId = (body as { voiceId?: unknown }).voiceId;
-  const resolvedVoiceId =
-    typeof clientVoiceId === "string" && clientVoiceId.trim()
-      ? clientVoiceId.trim()
-      : voiceId;
+  const bodyVoice = (body as { voiceId?: unknown }).voiceId;
   if (action !== "talk") {
     return NextResponse.json(
       { error: 'Expected { action: "talk", text: string }' },
@@ -53,6 +49,14 @@ export async function POST(req: NextRequest) {
   if (typeof text !== "string" || text.trim().length < 3) {
     return NextResponse.json({ error: "text must be at least 3 characters" }, { status: 400 });
   }
+
+  const fromBody =
+    typeof bodyVoice === "string" && bodyVoice.trim().length > 0
+      ? bodyVoice.trim()
+      : null;
+  const fromEnv =
+    process.env.ELEVENLABS_VOICE_ID?.trim() || DEFAULT_ELEVENLABS_VOICE_ID;
+  const voiceId = fromBody ?? fromEnv;
 
   const external = JSON.stringify({ elevenlabs: elevenKey });
 
@@ -70,7 +74,7 @@ export async function POST(req: NextRequest) {
         input: text.trim(),
         provider: {
           type: "elevenlabs",
-          voice_id: resolvedVoiceId,
+          voice_id: voiceId,
           voice_config: { stability: 0.5, similarity_boost: 0.75 },
         },
       },

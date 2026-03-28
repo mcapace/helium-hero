@@ -1,22 +1,25 @@
 import type { Metadata } from "next";
-import { Exo_2, JetBrains_Mono, Orbitron } from "next/font/google";
+import { DM_Sans, Rajdhani, Share_Tech_Mono } from "next/font/google";
 import "./globals.css";
 
-const orbitron = Orbitron({
+const rajdhani = Rajdhani({
+  weight: ["500", "600", "700"],
   subsets: ["latin"],
-  variable: "--font-orbitron",
+  variable: "--font-rajdhani",
   display: "swap",
 });
 
-const exo2 = Exo_2({
+const shareTechMono = Share_Tech_Mono({
+  weight: ["400"],
   subsets: ["latin"],
-  variable: "--font-exo2",
+  variable: "--font-share-tech",
   display: "swap",
 });
 
-const jetbrainsMono = JetBrains_Mono({
+const dmSans = DM_Sans({
+  weight: ["300", "400", "500"],
   subsets: ["latin"],
-  variable: "--font-mono-tech",
+  variable: "--font-dm-sans",
   display: "swap",
 });
 
@@ -34,9 +37,9 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${orbitron.variable} ${exo2.variable} ${jetbrainsMono.variable} h-full antialiased`}
+      className={`${rajdhani.variable} ${shareTechMono.variable} ${dmSans.variable} h-full antialiased`}
     >
-      <body className="min-h-full bg-[#050510] font-[family-name:var(--font-exo2),system-ui,sans-serif] text-zinc-100 selection:bg-[#22d3ee]/25 selection:text-white">
+      <body className="min-h-full bg-[var(--bg)] font-[family-name:var(--font-dm-sans),system-ui,sans-serif] font-normal text-[var(--white)] selection:bg-[var(--blue)]/25 selection:text-white">
         {children}
       </body>
     </html>
