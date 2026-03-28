@@ -92,6 +92,36 @@ const FACT_CARDS = [
     title: "Rocket Science",
     body: "NASA fuel tank pressurization",
   },
+  {
+    emoji: "🌍",
+    title: "Storm Spotters",
+    body: "Helium lifts weather balloons so meteorologists can track storms and help keep communities safer.",
+  },
+  {
+    emoji: "🔬",
+    title: "Greener Science",
+    body: "Ultra-cold helium helps researchers study materials and quantum systems—work that can lead to better batteries and cleaner tech.",
+  },
+  {
+    emoji: "🛰️",
+    title: "Eyes on Earth",
+    body: "Helium helps pressurize rocket fuel so we can launch satellites that monitor climate, oceans, and forests.",
+  },
+  {
+    emoji: "♻️",
+    title: "Recycle the Lift",
+    body: "Hospitals and labs recover helium from MRI and industry, cutting waste and protecting future supply.",
+  },
+  {
+    emoji: "📡",
+    title: "Connected World",
+    body: "Fiber optics and advanced chips are made with helium in the process—underpinning global internet and phones.",
+  },
+  {
+    emoji: "🧪",
+    title: "Breath of Discovery",
+    body: "From particle physics to medicine, helium’s extreme cold lets us invent tools that benefit life on Earth.",
+  },
 ];
 
 const GAS_PRESETS = Array.from({ length: 18 }, (_, i) => ({
@@ -137,7 +167,7 @@ function elevenLabsVoiceHint(
 
 function AssistantBubble({ children }: { children: React.ReactNode }) {
   return (
-    <div className="max-w-[88%] rounded-2xl rounded-tl-[0.2rem] border border-[rgba(168,216,240,0.14)] bg-[rgba(168,216,240,0.06)] px-4 py-3 text-[0.88rem] font-light leading-relaxed text-[var(--white)] sm:text-[0.92rem]">
+    <div className="max-w-[88%] rounded-2xl rounded-tl-[0.2rem] border border-[rgba(168,216,240,0.2)] bg-[rgba(168,216,240,0.09)] px-4 py-3 text-[0.92rem] font-normal leading-[1.55] text-[var(--white)] sm:text-[0.98rem]">
       {children}
     </div>
   );
@@ -857,10 +887,10 @@ export function HeliumHeroApp() {
   return (
     <div className="relative min-h-screen overflow-x-hidden text-[var(--white)]">
       <a
-        href="#chat-message-input"
+        href="#helium-chat"
         className={`absolute left-4 top-0 z-[100] -translate-y-full rounded-lg border border-[var(--border)] bg-[var(--bg)] px-4 py-2.5 text-sm font-medium text-[var(--blue)] shadow-[0_8px_24px_rgba(0,0,0,0.45)] transition-transform duration-200 focus:translate-y-4 focus-visible:translate-y-4 ${FOCUS_VISIBLE_RING}`}
       >
-        Skip to chat
+        Skip to chat with Helium Hero
       </a>
 
       <div className="page-bg pointer-events-none fixed inset-0 z-0" aria-hidden />
@@ -892,20 +922,28 @@ export function HeliumHeroApp() {
         className="relative z-10 w-full border-b border-[var(--border)] py-[1.1rem] max-[640px]:px-4 sm:px-6 lg:px-10"
         aria-label="Site"
       >
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4">
-          <p className="font-label min-w-0 text-[0.65rem] leading-snug tracking-wide text-[var(--steel)]">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 sm:gap-4">
+          <p className="font-label min-w-0 text-[0.68rem] leading-snug tracking-wide text-[var(--steel)] sm:text-[0.7rem]">
             ELEMENT DATABASE // NOBLE GAS SERIES
           </p>
-          <span className="font-heading shrink-0 rounded-md border border-[var(--border)] bg-[rgba(168,216,240,0.08)] px-2.5 py-1 text-[0.7rem] font-semibold tabular-nums text-[var(--blue)] sm:text-[0.78rem]">
-            He · 2
-          </span>
+          <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+            <a
+              href="#helium-chat"
+              className={`font-heading rounded-md border border-[rgba(168,216,240,0.28)] bg-[rgba(168,216,240,0.08)] px-2.5 py-1.5 text-[0.72rem] font-semibold uppercase tracking-wide text-[var(--blue)] transition hover:border-[var(--blue)]/50 hover:bg-[rgba(168,216,240,0.14)] sm:px-3 sm:text-[0.75rem] ${FOCUS_VISIBLE_RING}`}
+            >
+              Chat
+            </a>
+            <span className="font-heading rounded-md border border-[var(--border)] bg-[rgba(168,216,240,0.08)] px-2.5 py-1 text-[0.7rem] font-semibold tabular-nums text-[var(--blue)] sm:text-[0.78rem]">
+              He · 2
+            </span>
+          </div>
         </div>
       </nav>
 
       <main className="relative z-10 mx-auto max-w-7xl space-y-8 px-4 pb-12 pt-8 sm:px-6 lg:px-10 max-[640px]:space-y-6 max-[640px]:px-4 max-[640px]:pt-6">
             <section
               aria-labelledby="hero-name"
-              className="grid gap-8 md:grid-cols-[200px_1fr] md:items-start md:gap-10"
+              className="grid gap-8 md:grid-cols-[minmax(220px,300px)_1fr] md:items-start md:gap-10 lg:gap-12"
             >
               <div className="flex flex-col items-center gap-4 md:items-start">
                 <div
@@ -915,7 +953,7 @@ export function HeliumHeroApp() {
                       ? "Helium Hero is speaking — glowing portrait frame"
                       : "Helium Hero video frame"
                   }
-                  className={`relative w-[160px] shrink-0 rounded-[0.875rem] border border-[var(--border)] md:h-[calc(200px*4/3)] md:w-[200px] md:max-w-none ${heroRing ? "hero-portrait-speaking" : ""}`}
+                  className={`relative w-[min(92vw,220px)] shrink-0 rounded-[0.875rem] border border-[var(--border)] sm:w-[240px] md:h-[calc(280px*4/3)] md:w-[280px] lg:h-[calc(300px*4/3)] lg:w-[300px] md:max-w-none ${heroRing ? "hero-portrait-speaking" : ""}`}
                 >
                   <span
                     className="pointer-events-none absolute left-2 top-2 z-20 h-3.5 w-3.5 border-l-2 border-t-2 border-[var(--blue)]"
@@ -934,11 +972,11 @@ export function HeliumHeroApp() {
                     aria-hidden
                   />
 
-                  <div className="relative isolate aspect-square h-full min-h-[160px] w-full overflow-hidden bg-[#0a1218] md:aspect-auto md:h-full md:min-h-0">
+                  <div className="relative isolate aspect-square h-full min-h-[200px] w-full overflow-hidden bg-[#0a1218] md:aspect-auto md:h-full md:min-h-0">
                     {!heroBroken ? (
                       <video
                         ref={idleVideoRef}
-                        className="absolute inset-0 z-0 h-full w-full object-cover object-[center_12%]"
+                        className="absolute inset-0 z-0 h-full w-full object-cover object-[center_20%] sm:object-[center_15%]"
                         src={HERO_IDLE_VIDEO}
                         poster="/images/helium-hero.png"
                         autoPlay
@@ -954,7 +992,7 @@ export function HeliumHeroApp() {
                         <span className="font-heading text-4xl font-bold text-[var(--blue)]">
                           He
                         </span>
-                        <p className="font-body text-xs font-light text-[var(--dim)]">
+                        <p className="font-body text-xs font-normal leading-relaxed text-[var(--muted)]">
                           Add{" "}
                           <code className="text-[var(--steel)]">
                             public/video/duplexnyc_Helium_Hero_full_body_superhero_standing_heroic_pos_a50e06aa-8550-4525-82a3-32a1887d542f_0.mp4
@@ -972,7 +1010,7 @@ export function HeliumHeroApp() {
                       ref={videoRef}
                       src={dIdVideoUrl ?? undefined}
                       playsInline
-                      className={`absolute inset-0 z-10 h-full w-full object-cover object-[center_12%] transition-opacity duration-500 ease-out ${
+                      className={`absolute inset-0 z-10 h-full w-full object-cover object-[center_20%] transition-opacity duration-500 ease-out ${
                         videoLayerVisible && dIdVideoUrl
                           ? "opacity-100"
                           : "pointer-events-none opacity-0"
@@ -984,7 +1022,7 @@ export function HeliumHeroApp() {
                   </div>
                 </div>
 
-                <div className="flex w-full max-w-[200px] flex-col gap-3 md:max-w-none">
+                <div className="flex w-full max-w-[280px] flex-col gap-3 md:max-w-[300px]">
                   <div className="font-label flex items-center gap-2 text-[0.6rem] text-[var(--steel)]">
                     <span
                       className={`h-1.5 w-1.5 shrink-0 rounded-full ${
@@ -998,13 +1036,13 @@ export function HeliumHeroApp() {
                       role="status"
                       aria-live="polite"
                       aria-label={`Voice status: ${voiceStatus}`}
-                      className="tracking-wide text-[var(--dim)]"
+                      className="tracking-wide text-[var(--muted)]"
                     >
                       {voiceUiLabel}
                     </span>
                   </div>
 
-                  <div className="font-label flex flex-wrap items-center gap-2 text-[0.65rem] text-[var(--dim)]">
+                  <div className="font-label flex flex-wrap items-center gap-2 text-[0.68rem] text-[var(--muted)]">
                     {loading || speaking ? (
                       <button
                         type="button"
@@ -1088,7 +1126,7 @@ export function HeliumHeroApp() {
                   <span className="block">HELIUM</span>
                   <span className="block">HERO</span>
                 </h1>
-                <p className="font-body mx-auto max-w-xl text-[0.88rem] font-light leading-relaxed text-[var(--dim)] md:mx-0">
+                <p className="font-body mx-auto max-w-xl text-[0.94rem] font-normal leading-[1.6] text-[var(--muted)] md:mx-0">
                   Chat with the noble gas — explore helium through conversation.
                 </p>
 
@@ -1098,7 +1136,7 @@ export function HeliumHeroApp() {
                       key={`${cell.label}-${cell.value}`}
                       className="surface-card rounded-lg px-3 py-2.5 text-left"
                     >
-                      <p className="font-label text-[0.5rem] uppercase tracking-wide text-[var(--steel)]">
+                      <p className="font-label text-[0.52rem] uppercase tracking-wide text-[var(--steel)] sm:text-[0.54rem]">
                         {cell.label}
                       </p>
                       <p className="font-heading mt-1 text-[1.05rem] font-semibold leading-tight text-[var(--ice)]">
@@ -1111,7 +1149,7 @@ export function HeliumHeroApp() {
                 <div className="space-y-3">
                   {ABILITY_BARS.map((a, i) => (
                     <div key={a.label}>
-                      <p className="font-body mb-1 text-[0.75rem] font-light text-[var(--dim)]">
+                      <p className="font-body mb-1 text-[0.8rem] font-normal text-[var(--muted)]">
                         {a.label}
                       </p>
                       <div className="h-2 overflow-hidden rounded-sm bg-[rgba(255,255,255,0.07)]">
@@ -1130,86 +1168,26 @@ export function HeliumHeroApp() {
             </section>
 
             <section
-              className="surface-card flex flex-col gap-6 rounded-2xl p-5 sm:p-6 md:flex-row md:items-stretch md:gap-8 lg:p-[1.25rem_1.5rem]"
-              aria-labelledby="atmosphere-heading"
+              id="helium-chat"
+              className="surface-card chat-panel-focus scroll-mt-24 overflow-hidden rounded-2xl"
+              aria-labelledby="chat-panel-title"
             >
-              <div className="min-w-0 flex-1 space-y-4">
-                <h2
-                  id="atmosphere-heading"
-                  className="font-label text-[0.6rem] tracking-[0.15em] text-[var(--steel)]"
-                >
-                  EARTH&apos;S ATMOSPHERE COMPOSITION
-                </h2>
-                <div className="space-y-3">
-                  {ATMOSPHERE_ROWS.map((row) => {
-                    const barW =
-                      row.pct < 0.02
-                        ? Math.max(row.pct * 1200, row.highlight ? 6 : 2)
-                        : row.pct;
-                    return (
-                      <div
-                        key={row.name}
-                        className="flex items-center gap-3"
-                      >
-                        <span
-                          className={`font-body w-[120px] min-w-[120px] shrink-0 text-[0.8rem] font-light ${row.highlight ? "font-medium text-[var(--blue)]" : "text-[var(--dim)]"}`}
-                        >
-                          {row.name}
-                        </span>
-                        <div className="relative h-2 min-w-0 flex-1 overflow-hidden rounded-full bg-[rgba(255,255,255,0.06)]">
-                          <span
-                            className="absolute inset-y-0 left-0 rounded-full"
-                            style={{
-                              width: `${Math.min(barW, 100)}%`,
-                              minWidth: row.highlight ? "4px" : undefined,
-                              background: row.fill,
-                              boxShadow: row.highlight
-                                ? "0 0 12px 2px rgba(168,216,240,0.35)"
-                                : undefined,
-                            }}
-                          />
-                        </div>
-                        <span className="font-label w-14 shrink-0 text-right text-[0.6rem] tabular-nums text-[var(--steel)]">
-                          {row.pct < 0.01
-                            ? `${row.pct.toFixed(4)}%`
-                            : `${row.pct}%`}
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
-                <p className="font-body pt-1 text-[0.75rem] font-light italic leading-relaxed text-[var(--dim)]">
-                  Helium is so light it escapes Earth&apos;s gravity — constantly
-                  drifting into space.
-                </p>
-              </div>
-              <div className="flex min-w-0 flex-col items-stretch justify-center max-[640px]:w-full md:w-auto">
-                <div className="surface-card flex min-w-[110px] flex-col items-center justify-center rounded-xl bg-[rgba(168,216,240,0.06)] px-6 py-8 text-center max-[640px]:w-full">
-                  <p className="font-heading text-3xl font-bold text-[var(--blue)]">
-                    He
-                  </p>
-                  <p className="font-label mt-2 text-[0.55rem] tracking-wide text-[var(--steel)]">
-                    NOBLE GAS
-                  </p>
-                  <p className="font-body mt-4 max-w-[12rem] text-[0.7rem] font-light text-[var(--dim)]">
-                    24% of the universe by mass
-                  </p>
-                </div>
-              </div>
-            </section>
-
-            <section
-              className="surface-card overflow-hidden rounded-2xl"
-              aria-label="Chat with Helium Hero"
-            >
-              <header className="flex items-center justify-between gap-3 border-b border-[var(--border)] px-4 py-3 sm:px-5">
+              <header className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--border)] px-4 py-3 sm:px-5">
                 <div className="flex min-w-0 items-center gap-3">
-                  <div className="font-heading flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[rgba(168,216,240,0.1)] text-xs font-semibold text-[var(--blue)]">
+                  <div className="font-heading flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[rgba(168,216,240,0.12)] text-sm font-semibold text-[var(--blue)]">
                     He
                   </div>
-                  <p className="font-label truncate text-[0.6rem] tracking-wide text-[var(--steel)]">
-                    ASK HELIUM HERO ANYTHING
-                  </p>
+                  <div className="min-w-0">
+                    <h2
+                      id="chat-panel-title"
+                      className="font-heading text-base font-semibold leading-tight text-[var(--ice)] sm:text-lg"
+                    >
+                      Chat with Helium Hero
+                    </h2>
+                    <p className="font-label mt-0.5 text-[0.62rem] tracking-[0.12em] text-[var(--steel)] sm:text-[0.65rem]">
+                      ASK HELIUM HERO ANYTHING
+                    </p>
+                  </div>
                 </div>
                 {thread.length > 0 ? (
                   <button
@@ -1242,12 +1220,22 @@ export function HeliumHeroApp() {
                 ) : null}
               </header>
 
+              <p
+                id="chat-panel-hint"
+                className="border-b border-[var(--border)] px-4 py-2.5 font-body text-[0.88rem] leading-snug text-[var(--muted)] sm:px-5 sm:text-[0.92rem]"
+              >
+                Ask about helium, Earth, or science — or pick a quick topic.
+                Keyboard:&nbsp;Tab through the suggestions, then the message box and
+                Send.
+              </p>
+
               <div
                 ref={listRef}
                 role="log"
                 aria-live="polite"
                 aria-relevant="additions text"
-                className="h-[260px] max-[640px]:h-[220px] space-y-3 overflow-y-auto px-4 py-4 sm:px-5"
+                aria-label="Chat messages"
+                className="h-[320px] space-y-3 overflow-y-auto overflow-x-hidden px-4 py-4 sm:h-[340px] sm:px-5 max-[640px]:h-[260px]"
               >
                 <div className="animate-slide-in-msg flex justify-start">
                   <AssistantBubble>{WELCOME_MESSAGE.content}</AssistantBubble>
@@ -1267,7 +1255,7 @@ export function HeliumHeroApp() {
                       className={`animate-slide-in-msg flex ${m.role === "user" ? "justify-end" : "justify-start"}`}
                     >
                       {m.role === "user" ? (
-                        <div className="font-body max-w-[85%] rounded-2xl rounded-tr-[0.2rem] bg-[rgba(255,255,255,0.05)] px-4 py-3 text-[0.88rem] font-light leading-relaxed text-[var(--white)] sm:text-[0.92rem]">
+                        <div className="font-body max-w-[85%] rounded-2xl rounded-tr-[0.2rem] bg-[rgba(255,255,255,0.08)] px-4 py-3 text-[0.92rem] font-normal leading-[1.55] text-[var(--white)] sm:text-[0.98rem]">
                           {m.content}
                         </div>
                       ) : isLiveTyping ? (
@@ -1283,7 +1271,7 @@ export function HeliumHeroApp() {
                               {typingDotsRow}
                             </div>
                             <p
-                              className={`whitespace-pre-wrap text-[0.88rem] font-light leading-relaxed text-[var(--white)] transition-opacity duration-200 ease-out sm:text-[0.92rem] ${
+                              className={`whitespace-pre-wrap text-[0.92rem] font-normal leading-[1.55] text-[var(--white)] transition-opacity duration-200 ease-out sm:text-[0.98rem] ${
                                 typeRevealLen === 0 ? "opacity-0" : "opacity-100"
                               }`}
                             >
@@ -1299,7 +1287,7 @@ export function HeliumHeroApp() {
                 })}
                 {loading && (
                   <div className="flex justify-start animate-slide-in-msg">
-                    <div className="flex items-center gap-1 rounded-2xl rounded-tl-[0.2rem] border border-[rgba(168,216,240,0.14)] bg-[rgba(168,216,240,0.06)] px-4 py-3">
+                    <div className="flex items-center gap-1 rounded-2xl rounded-tl-[0.2rem] border border-[rgba(168,216,240,0.2)] bg-[rgba(168,216,240,0.09)] px-4 py-3">
                       {typingDotsRow}
                     </div>
                   </div>
@@ -1307,7 +1295,11 @@ export function HeliumHeroApp() {
               </div>
 
               <div className="border-t border-[var(--border)] bg-transparent">
-                <div className="flex flex-wrap gap-2 overflow-x-auto px-4 py-3 sm:px-5 [scrollbar-width:thin]">
+                <div
+                  className="flex flex-wrap gap-2 overflow-x-auto px-4 py-3 sm:px-5 [scrollbar-width:thin]"
+                  role="toolbar"
+                  aria-label="Quick questions"
+                >
                   {QUICK_PROMPTS.map((q) => (
                     <button
                       key={q.label}
@@ -1315,7 +1307,7 @@ export function HeliumHeroApp() {
                       disabled={loading}
                       onClick={() => void sendChat(q.text)}
                       aria-label={q.text}
-                      className={`font-body shrink-0 whitespace-nowrap rounded-[2rem] border border-[rgba(168,216,240,0.14)] bg-[rgba(255,255,255,0.03)] px-3 py-2 text-[0.73rem] font-normal text-[var(--white)] transition hover:border-[rgba(168,216,240,0.35)] hover:bg-[rgba(168,216,240,0.09)] disabled:opacity-50 ${FOCUS_VISIBLE_RING}`}
+                      className={`font-body min-h-10 shrink-0 whitespace-nowrap rounded-[2rem] border border-[rgba(168,216,240,0.18)] bg-[rgba(255,255,255,0.05)] px-3 py-2 text-[0.8rem] font-normal text-[var(--white)] transition hover:border-[rgba(168,216,240,0.4)] hover:bg-[rgba(168,216,240,0.1)] disabled:opacity-50 ${FOCUS_VISIBLE_RING}`}
                     >
                       {q.label}
                     </button>
@@ -1327,7 +1319,7 @@ export function HeliumHeroApp() {
                     <button
                       type="button"
                       aria-label="Enable sound: unmute Helium Hero voice and video after the browser blocked playback until you interact"
-                      className={`font-label w-full rounded-lg border border-[rgba(168,216,240,0.35)] bg-[rgba(168,216,240,0.08)] py-2.5 text-[0.7rem] font-semibold uppercase tracking-wide text-[var(--blue)] transition hover:bg-[rgba(168,216,240,0.12)] ${FOCUS_VISIBLE_RING}`}
+                      className={`font-label min-h-11 w-full rounded-lg border border-[rgba(168,216,240,0.35)] bg-[rgba(168,216,240,0.08)] py-2.5 text-[0.75rem] font-semibold uppercase tracking-wide text-[var(--blue)] transition hover:bg-[rgba(168,216,240,0.12)] ${FOCUS_VISIBLE_RING}`}
                       onClick={() => void soundUnlockRef.current?.()}
                     >
                       Enable sound
@@ -1338,21 +1330,26 @@ export function HeliumHeroApp() {
                 <form
                   className="border-t border-[var(--border)] p-4 sm:p-5"
                   onSubmit={onSubmit}
+                  aria-describedby="chat-panel-hint"
                 >
-                  <div className="flex gap-2 sm:gap-3">
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-stretch sm:gap-3">
+                    <label htmlFor="chat-message-input" className="sr-only">
+                      Message to Helium Hero
+                    </label>
                     <input
                       id="chat-message-input"
                       value={input}
                       onChange={(e) => setInput(e.target.value)}
                       placeholder="Ask Helium Hero…"
-                      className={`font-body min-w-0 flex-1 rounded-lg border border-[var(--border)] bg-[rgba(255,255,255,0.04)] px-4 py-3 text-[0.88rem] font-light text-[var(--white)] outline-none transition placeholder:text-[var(--dim)] focus:border-[rgba(168,216,240,0.38)] ${FOCUS_VISIBLE_RING}`}
+                      className={`font-body min-h-12 min-w-0 flex-1 rounded-lg border border-[var(--border)] bg-[rgba(255,255,255,0.06)] px-4 py-3 text-[0.94rem] font-normal text-[var(--white)] outline-none transition placeholder:text-[var(--dim)] focus:border-[rgba(168,216,240,0.45)] ${FOCUS_VISIBLE_RING}`}
                       disabled={loading}
+                      autoComplete="off"
                       aria-label="Message to Helium Hero"
                     />
                     <button
                       type="submit"
                       disabled={loading || !input.trim()}
-                      className={`font-heading shrink-0 rounded-lg border border-[rgba(168,216,240,0.28)] bg-[rgba(168,216,240,0.1)] px-5 py-3 text-[0.88rem] font-semibold text-[var(--blue)] transition hover:border-[var(--blue)]/45 hover:bg-[rgba(168,216,240,0.14)] disabled:opacity-40 ${FOCUS_VISIBLE_RING}`}
+                      className={`font-heading min-h-12 shrink-0 rounded-lg border border-[rgba(168,216,240,0.32)] bg-[rgba(168,216,240,0.12)] px-6 py-3 text-[0.94rem] font-semibold text-[var(--blue)] transition hover:border-[var(--blue)]/45 hover:bg-[rgba(168,216,240,0.16)] disabled:opacity-40 ${FOCUS_VISIBLE_RING}`}
                     >
                       Send
                     </button>
@@ -1361,23 +1358,103 @@ export function HeliumHeroApp() {
               </div>
             </section>
 
-            <section aria-labelledby="facts-heading">
-              <h2 id="facts-heading" className="sr-only">
-                Helium facts
-              </h2>
-              <div className="grid grid-cols-3 gap-[0.6rem] max-[640px]:grid-cols-2 max-[400px]:grid-cols-1">
+            <section
+              className="surface-card flex flex-col gap-6 rounded-2xl p-5 sm:p-6 md:flex-row md:items-stretch md:gap-8 lg:p-[1.25rem_1.5rem]"
+              aria-labelledby="atmosphere-heading"
+            >
+              <div className="min-w-0 flex-1 space-y-4">
+                <h2
+                  id="atmosphere-heading"
+                  className="font-label text-[0.65rem] tracking-[0.15em] text-[var(--steel)] sm:text-[0.68rem]"
+                >
+                  EARTH&apos;S ATMOSPHERE COMPOSITION
+                </h2>
+                <div className="space-y-3">
+                  {ATMOSPHERE_ROWS.map((row) => {
+                    const barW =
+                      row.pct < 0.02
+                        ? Math.max(row.pct * 1200, row.highlight ? 6 : 2)
+                        : row.pct;
+                    return (
+                      <div
+                        key={row.name}
+                        className="flex items-center gap-3"
+                      >
+                        <span
+                          className={`font-body w-[120px] min-w-[120px] shrink-0 text-[0.82rem] font-normal ${row.highlight ? "font-medium text-[var(--blue)]" : "text-[var(--muted)]"}`}
+                        >
+                          {row.name}
+                        </span>
+                        <div className="relative h-2 min-w-0 flex-1 overflow-hidden rounded-full bg-[rgba(255,255,255,0.06)]">
+                          <span
+                            className="absolute inset-y-0 left-0 rounded-full"
+                            style={{
+                              width: `${Math.min(barW, 100)}%`,
+                              minWidth: row.highlight ? "4px" : undefined,
+                              background: row.fill,
+                              boxShadow: row.highlight
+                                ? "0 0 12px 2px rgba(168,216,240,0.35)"
+                                : undefined,
+                            }}
+                          />
+                        </div>
+                        <span className="font-label w-14 shrink-0 text-right text-[0.6rem] tabular-nums text-[var(--steel)]">
+                          {row.pct < 0.01
+                            ? `${row.pct.toFixed(4)}%`
+                            : `${row.pct}%`}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+                <p className="font-body pt-1 text-[0.84rem] font-normal italic leading-relaxed text-[var(--muted)]">
+                  Helium is so light it escapes Earth&apos;s gravity — constantly
+                  drifting into space.
+                </p>
+              </div>
+              <div className="flex min-w-0 flex-col items-stretch justify-center max-[640px]:w-full md:w-auto">
+                <div className="surface-card flex min-w-[110px] flex-col items-center justify-center rounded-xl bg-[rgba(168,216,240,0.06)] px-6 py-8 text-center max-[640px]:w-full">
+                  <p className="font-heading text-3xl font-bold text-[var(--blue)]">
+                    He
+                  </p>
+                  <p className="font-label mt-2 text-[0.55rem] tracking-wide text-[var(--steel)]">
+                    NOBLE GAS
+                  </p>
+                  <p className="font-body mt-4 max-w-[12rem] text-[0.78rem] font-normal leading-snug text-[var(--muted)]">
+                    24% of the universe by mass
+                  </p>
+                </div>
+              </div>
+            </section>
+
+            <section
+              className="space-y-4"
+              aria-labelledby="facts-heading"
+            >
+              <div>
+                <h2
+                  id="facts-heading"
+                  className="font-heading text-xl font-semibold text-[var(--ice)] sm:text-2xl"
+                >
+                  Helium facts — for Earth and beyond
+                </h2>
+                <p className="font-body mt-2 max-w-2xl text-[0.92rem] font-normal leading-relaxed text-[var(--muted)]">
+                  From the lab to the sky: ways helium shows up in life on Earth.
+                </p>
+              </div>
+              <div className="grid grid-cols-3 gap-3 max-[900px]:grid-cols-2 max-[500px]:grid-cols-1 sm:gap-[0.65rem]">
                 {FACT_CARDS.map((f) => (
                   <article
                     key={f.title}
-                    className="surface-card rounded-xl px-[1rem] py-[0.85rem]"
+                    className="surface-card rounded-xl px-[1rem] py-[0.95rem]"
                   >
-                    <span className="text-base" aria-hidden>
+                    <span className="text-lg" aria-hidden>
                       {f.emoji}
                     </span>
-                    <h3 className="font-heading mt-2 text-[0.85rem] font-semibold leading-snug text-[var(--blue)]">
+                    <h3 className="font-heading mt-2 text-[0.9rem] font-semibold leading-snug text-[var(--blue)]">
                       {f.title}
                     </h3>
-                    <p className="font-body mt-1.5 text-[0.75rem] font-light leading-relaxed text-[var(--dim)]">
+                    <p className="font-body mt-2 text-[0.8rem] font-normal leading-relaxed text-[var(--muted)]">
                       {f.body}
                     </p>
                   </article>

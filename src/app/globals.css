@@ -2,13 +2,14 @@
 
 :root {
   --bg: #060b11;
-  --surface: rgba(168, 216, 240, 0.04);
-  --border: rgba(168, 216, 240, 0.12);
+  --surface: rgba(168, 216, 240, 0.07);
+  --border: rgba(168, 216, 240, 0.18);
   --blue: #a8d8f0;
   --ice: #ddf0fa;
-  --steel: #6a9db8;
-  --dim: rgba(255, 255, 255, 0.38);
-  --white: rgba(255, 255, 255, 0.88);
+  --steel: #7eb3d4;
+  --dim: rgba(255, 255, 255, 0.55);
+  --muted: rgba(255, 255, 255, 0.68);
+  --white: rgba(255, 255, 255, 0.94);
   --voice-ready: #3ecf8e;
 }
 
@@ -156,4 +157,10 @@ body {
 .surface-card {
   background: var(--surface);
   border: 1px solid var(--border);
+}
+
+.chat-panel-focus {
+  box-shadow:
+    0 0 0 1px rgba(168, 216, 240, 0.22),
+    0 12px 40px rgba(0, 0, 0, 0.35);
 }
