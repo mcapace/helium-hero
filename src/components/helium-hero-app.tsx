@@ -7,7 +7,8 @@ import {
 } from "@/lib/anthropic-stream";
 import { playMp3FromReadableStream } from "@/lib/play-mp3-mse";
 
-const HERO_IDLE_VIDEO = "/video/helium-hero-idle.mp4";
+const HERO_IDLE_VIDEO =
+  "/video/duplexnyc_Helium_Hero_full_body_superhero_standing_heroic_pos_a50e06aa-8550-4525-82a3-32a1887d542f_0.mp4";
 const ELEVEN_VOICE_STORAGE_KEY = "helium-hero-elevenlabs-voice-id";
 
 type ChatMessage = { role: "user" | "assistant"; content: string };
@@ -15,41 +16,92 @@ type ChatMessage = { role: "user" | "assistant"; content: string };
 type VoiceStatus = "Ready" | "Thinking..." | "Speaking...";
 
 const QUICK_PROMPTS: { label: string; text: string }[] = [
-  { label: "⚡ Superpowers", text: "What superpowers do you have as helium?" },
-  { label: "🌍 Where found", text: "Where is helium found in nature?" },
-  { label: "🎈 Why balloons float", text: "Why do helium balloons float?" },
-  { label: "🔬 Discovery", text: "How was helium discovered?" },
-  { label: "🏆 Noble gas", text: "What makes helium a noble gas?" },
-];
-
-const FAST_FACTS = [
+  { label: "Superpowers", text: "What superpowers do you have as helium?" },
+  { label: "Where found", text: "Where is helium found in nature?" },
+  { label: "Why balloons float", text: "Why do helium balloons float?" },
+  { label: "Discovery", text: "How was helium discovered?" },
   {
-    title: "🌡️ Boiling point",
-    body: "−269°C — coldest liquid on Earth",
-  },
-  {
-    title: "⭐ Abundance",
-    body: "Second most abundant element in the universe",
-  },
-  {
-    title: "🔬 Discovery",
-    body: "Discovered in 1868 by observing the Sun",
-  },
-  {
-    title: "🎈 Lightness",
-    body: "7× lighter than air — why balloons float",
-  },
-  {
-    title: "🏥 MRI machines",
-    body: "Used to cool superconducting magnets",
-  },
-  {
-    title: "🚀 NASA",
-    body: "Used as rocket fuel coolant by NASA",
+    label: "Surprise me",
+    text: "Surprise me with a helium fact I don't know.",
   },
 ];
 
-const BALLOONS = ["🎈", "🎈", "🎈", "🎈"];
+const HERO_STATS: { label: string; value: string }[] = [
+  { label: "Symbol", value: "He" },
+  { label: "Atomic No.", value: "2" },
+  { label: "Atomic Mass", value: "4.003" },
+  { label: "Group", value: "Noble Gas" },
+  { label: "Period", value: "1" },
+  { label: "State", value: "Gas" },
+  { label: "Boiling Pt.", value: "−269°C" },
+  { label: "Discovered", value: "1868" },
+];
+
+const ABILITY_BARS: { label: string; pct: number }[] = [
+  { label: "Buoyancy", pct: 95 },
+  { label: "Inertness", pct: 100 },
+  { label: "Thermal Resistance", pct: 88 },
+  { label: "Cosmic Origin", pct: 100 },
+];
+
+const ATMOSPHERE_ROWS: {
+  name: string;
+  pct: number;
+  fill: string;
+  highlight?: boolean;
+}[] = [
+  { name: "Nitrogen (N₂)", pct: 78.09, fill: "rgba(100,160,220,0.5)" },
+  { name: "Oxygen (O₂)", pct: 20.95, fill: "rgba(80,200,160,0.5)" },
+  { name: "Argon (Ar)", pct: 0.93, fill: "rgba(150,130,200,0.5)" },
+  {
+    name: "Helium (He) ★",
+    pct: 0.0005,
+    fill: "var(--blue)",
+    highlight: true,
+  },
+];
+
+const FACT_CARDS = [
+  {
+    emoji: "❄️",
+    title: "Coldest Liquid",
+    body: "−269°C boiling point",
+  },
+  {
+    emoji: "⭐",
+    title: "Star Power",
+    body: "Forged in the Big Bang",
+  },
+  {
+    emoji: "☀️",
+    title: "Sun Discovery",
+    body: "Found in Sun before Earth (1868)",
+  },
+  {
+    emoji: "🎈",
+    title: "Lighter Than Air",
+    body: "7× lighter, why balloons float",
+  },
+  {
+    emoji: "🏥",
+    title: "MRI Cooling",
+    body: "Superconducting magnet cooling",
+  },
+  {
+    emoji: "🚀",
+    title: "Rocket Science",
+    body: "NASA fuel tank pressurization",
+  },
+];
+
+const GAS_PRESETS = Array.from({ length: 18 }, (_, i) => ({
+  left: `${((i * 53) % 94) + 3}%`,
+  size: 2 + (i % 5),
+  duration: 14 + (i % 9),
+  delay: ((i * 0.41) % 5) + ((i * 0.13) % 10) * 0.03,
+  op: 0.3 + (i % 4) * 0.06,
+  drift: `${(i % 7) - 3}px`,
+}));
 
 const WELCOME_MESSAGE: ChatMessage = {
   role: "assistant",
@@ -58,7 +110,7 @@ const WELCOME_MESSAGE: ChatMessage = {
 };
 
 const FOCUS_VISIBLE_RING =
-  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22d3ee] focus-visible:ring-offset-2 focus-visible:ring-offset-[#050510]";
+  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--blue)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg)]";
 
 const TYPEWRITER_CHARS_PER_FRAME = 30;
 
@@ -85,10 +137,8 @@ function elevenLabsVoiceHint(
 
 function AssistantBubble({ children }: { children: React.ReactNode }) {
   return (
-    <div className="assistant-bubble-border max-w-[88%] rounded-2xl p-[1px] shadow-[0_0_40px_rgba(34,211,238,0.12),0_0_1px_rgba(255,255,255,0.15)_inset]">
-      <div className="rounded-[0.9rem] bg-[#080812]/95 px-4 py-3 text-sm leading-relaxed text-zinc-100 backdrop-blur-md sm:text-[15px]">
-        {children}
-      </div>
+    <div className="max-w-[88%] rounded-2xl rounded-tl-[0.2rem] border border-[rgba(168,216,240,0.14)] bg-[rgba(168,216,240,0.06)] px-4 py-3 text-[0.88rem] font-light leading-relaxed text-[var(--white)] sm:text-[0.92rem]">
+      {children}
     </div>
   );
 }
@@ -782,282 +832,403 @@ export function HeliumHeroApp() {
   };
 
   const heroRing = speaking || videoLayerVisible;
+  const voiceUiLabel = heroRing
+    ? "SPEAKING"
+    : voiceStatus === "Thinking..."
+      ? "THINKING"
+      : voiceStatus === "Speaking..."
+        ? "SPEAKING"
+        : "READY";
+
   const typingDotsRow = (
-    <div
-      className="flex items-center gap-1"
-      aria-hidden
-    >
-      <span className="h-2 w-2 rounded-full bg-[#f472b6] animate-typing-dot" />
+    <div className="flex items-center gap-1" aria-hidden>
+      <span className="h-1.5 w-1.5 rounded-full bg-[var(--steel)] animate-typing-dot" />
       <span
-        className="h-2 w-2 rounded-full bg-[#22d3ee] animate-typing-dot"
+        className="h-1.5 w-1.5 rounded-full bg-[var(--steel)] animate-typing-dot"
         style={{ animationDelay: "0.15s" }}
       />
       <span
-        className="h-2 w-2 rounded-full bg-[#a78bfa] animate-typing-dot"
+        className="h-1.5 w-1.5 rounded-full bg-[var(--steel)] animate-typing-dot"
         style={{ animationDelay: "0.3s" }}
       />
     </div>
   );
 
   return (
-    <div className="relative min-h-screen overflow-x-hidden text-zinc-100">
+    <div className="relative min-h-screen overflow-x-hidden text-[var(--white)]">
       <a
         href="#chat-message-input"
-        className={`absolute left-4 top-0 z-[100] -translate-y-full rounded-lg border border-[#22d3ee]/55 bg-[#080812] px-4 py-2.5 text-sm font-medium text-[#22d3ee] shadow-[0_8px_24px_rgba(0,0,0,0.45)] transition-transform duration-200 focus:translate-y-4 focus-visible:translate-y-4 ${FOCUS_VISIBLE_RING}`}
+        className={`absolute left-4 top-0 z-[100] -translate-y-full rounded-lg border border-[var(--border)] bg-[var(--bg)] px-4 py-2.5 text-sm font-medium text-[var(--blue)] shadow-[0_8px_24px_rgba(0,0,0,0.45)] transition-transform duration-200 focus:translate-y-4 focus-visible:translate-y-4 ${FOCUS_VISIBLE_RING}`}
       >
         Skip to chat
       </a>
-      <div
-        className="pointer-events-none fixed inset-0 -z-10 bg-[#050510]"
-        aria-hidden
-      />
-      <div
-        className="pointer-events-none fixed inset-0 z-0 tech-bg-grid opacity-70"
-        aria-hidden
-      />
-      <div
-        className="pointer-events-none fixed inset-0 z-0 tech-vignette"
-        aria-hidden
-      />
+
+      <div className="page-bg pointer-events-none fixed inset-0 z-0" aria-hidden />
+
       <div
         className="pointer-events-none fixed inset-0 z-0 overflow-hidden"
         aria-hidden
       >
-        <div className="tech-sweep absolute inset-x-0 top-0 w-full" />
-      </div>
-      <div
-        className="pointer-events-none fixed -left-40 top-1/4 -z-10 h-[min(80vw,560px)] w-[min(80vw,560px)] rounded-full bg-[radial-gradient(circle_at_30%_30%,rgba(244,114,182,0.38),transparent_58%)] blur-[45px] animate-orb-a"
-        aria-hidden
-      />
-      <div
-        className="pointer-events-none fixed -right-48 bottom-1/4 -z-10 h-[min(90vw,620px)] w-[min(90vw,620px)] rounded-full bg-[radial-gradient(circle_at_40%_40%,rgba(34,211,238,0.32),transparent_52%)] blur-[63px] animate-orb-b"
-        aria-hidden
-      />
-      <div
-        className="pointer-events-none fixed left-1/2 top-0 -z-10 h-[480px] w-[480px] -translate-x-1/2 rounded-full bg-[radial-gradient(circle,rgba(167,139,250,0.28),transparent_62%)] blur-[56px] animate-orb-a"
-        aria-hidden
-      />
-
-      <div className="pointer-events-none fixed inset-x-0 bottom-0 z-0 h-[45vh] overflow-hidden">
-        {BALLOONS.map((b, i) => (
+        {GAS_PRESETS.map((p, i) => (
           <span
             key={i}
-            className="absolute bottom-0 text-3xl sm:text-4xl opacity-40 animate-float-balloon drop-shadow-[0_0_12px_rgba(34,211,238,0.35)]"
-            style={{
-              left: `${10 + i * 23}%`,
-              animationDuration: `${14 + (i % 5) * 3}s`,
-              animationDelay: `${i * 1.2}s`,
-            }}
-            aria-hidden
-          >
-            {b}
-          </span>
+            className="gas-particle"
+            style={
+              {
+                left: p.left,
+                width: p.size,
+                height: p.size,
+                animationDuration: `${p.duration}s`,
+                animationDelay: `${p.delay}s`,
+                "--gas-op": p.op,
+                "--gas-drift": p.drift,
+              } as React.CSSProperties
+            }
+          />
         ))}
       </div>
 
-      <main className="relative z-10 mx-auto flex min-h-screen max-w-7xl flex-col px-4 pb-10 pt-6 sm:px-6 lg:px-10">
-        <header className="mb-6 text-center lg:mb-8">
-          <div className="mx-auto mb-4 flex max-w-4xl items-center justify-between gap-4 border-b border-white/[0.08] pb-3 font-mono-tech text-xs text-zinc-400">
-            <span className="flex min-w-0 flex-1 items-center gap-2 text-left tracking-wide">
-              <span
-                className="h-2 w-2 shrink-0 rounded-full bg-[#22d3ee] shadow-[0_0_10px_#22d3ee]"
-                aria-hidden
-              />
-              <span className="truncate">
-                HE_SPECIES // INTERFACE · He · ATOMIC&nbsp;2
-              </span>
-            </span>
-            <span className="shrink-0 tabular-nums tracking-wider text-[#fbbf24]/85">
-              UPLINK · NOMINAL
-            </span>
-          </div>
-          <p className="font-mono-tech text-xs uppercase tracking-[0.5em] text-[#22d3ee]/90">
-            Educational neural link
+      <nav
+        className="relative z-10 w-full border-b border-[var(--border)] py-[1.1rem] max-[640px]:px-4 sm:px-6 lg:px-10"
+        aria-label="Site"
+      >
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4">
+          <p className="font-label min-w-0 text-[0.65rem] leading-snug tracking-wide text-[var(--steel)]">
+            ELEMENT DATABASE // NOBLE GAS SERIES
           </p>
-          <h1 className="font-heading mt-2 bg-gradient-to-r from-[#f472b6] via-[#22d3ee] to-[#a78bfa] bg-clip-text text-3xl font-bold tracking-tight text-transparent sm:text-5xl md:text-6xl">
-            Helium Hero
-          </h1>
-          <p className="mx-auto mt-3 max-w-2xl text-sm leading-relaxed text-zinc-400 sm:text-base">
-            Chat with the noble gas — explore helium through conversation.
-          </p>
-        </header>
+          <span className="font-heading shrink-0 rounded-md border border-[var(--border)] bg-[rgba(168,216,240,0.08)] px-2.5 py-1 text-[0.7rem] font-semibold tabular-nums text-[var(--blue)] sm:text-[0.78rem]">
+            He · 2
+          </span>
+        </div>
+      </nav>
 
-        <div className="flex min-h-0 flex-1 flex-col gap-6 lg:min-h-[min(85vh,920px)] lg:flex-row lg:items-stretch lg:gap-8">
-          {/* Hero column ~40% desktop */}
-          <aside className="flex w-full shrink-0 flex-col gap-3 lg:w-[40%] lg:max-w-[40%] lg:min-w-0">
-            <div
-              role="region"
-              aria-label={
-                heroRing
-                  ? "Helium Hero is speaking — pulsing border animation on the video frame"
-                  : "Helium Hero video frame"
-              }
-              className={`relative mx-auto h-[40vh] max-h-[40vh] w-full overflow-hidden rounded-2xl p-[2px] lg:mx-0 lg:h-full lg:max-h-none lg:min-h-[min(72vh,820px)] lg:flex-1 lg:rounded-3xl lg:p-[3px] ${
-                heroRing
-                  ? "animate-hero-ring-speaking"
-                  : "shadow-[0_0_0_1px_rgba(34,211,238,0.15),0_24px_80px_rgba(0,0,0,0.45)]"
-              }`}
+      <main className="relative z-10 mx-auto max-w-7xl space-y-8 px-4 pb-12 pt-8 sm:px-6 lg:px-10 max-[640px]:space-y-6 max-[640px]:px-4 max-[640px]:pt-6">
+            <section
+              aria-labelledby="hero-name"
+              className="grid gap-8 md:grid-cols-[200px_1fr] md:items-start md:gap-10"
             >
-              <div
-                className={`relative isolate h-full min-h-0 w-full overflow-hidden rounded-[0.9rem] bg-gradient-to-br from-[#12122a] via-[#0a0a14] to-[#050510] lg:rounded-[1.4rem] ${heroRing ? "" : "animate-hero-breathe-idle"}`}
-              >
+              <div className="flex flex-col items-center gap-4 md:items-start">
                 <div
-                  className="pointer-events-none absolute inset-0 z-[1] bg-gradient-to-t from-[#050510]/80 via-transparent to-[#22d3ee]/[0.07]"
-                  aria-hidden
-                />
-                {!heroBroken ? (
-                  <video
-                    ref={idleVideoRef}
-                    className="absolute inset-0 z-0 h-full w-full object-cover [object-position:center_12%]"
-                    src={HERO_IDLE_VIDEO}
-                    poster="/images/helium-hero.png"
-                    autoPlay
-                    loop
-                    muted
-                    playsInline
-                    preload="auto"
-                    aria-label="Helium Hero character loop"
-                    onError={() => setHeroBroken(true)}
+                  role="region"
+                  aria-label={
+                    heroRing
+                      ? "Helium Hero is speaking — glowing portrait frame"
+                      : "Helium Hero video frame"
+                  }
+                  className={`relative w-[160px] shrink-0 rounded-[0.875rem] border border-[var(--border)] md:h-[calc(200px*4/3)] md:w-[200px] md:max-w-none ${heroRing ? "hero-portrait-speaking" : ""}`}
+                >
+                  <span
+                    className="pointer-events-none absolute left-2 top-2 z-20 h-3.5 w-3.5 border-l-2 border-t-2 border-[var(--blue)]"
+                    aria-hidden
                   />
-                ) : (
-                  <div className="flex h-full w-full flex-col items-center justify-center gap-2 bg-gradient-to-b from-[#2e1064]/40 to-[#0a0a1a] px-6 text-center">
-                    <span className="font-heading text-5xl font-bold text-[#fbbf24]">
-                      He
-                    </span>
-                    <p className="text-sm text-zinc-400">
-                      Add{" "}
-                      <code className="text-[#22d3ee]">public/video/helium-hero-idle.mp4</code>{" "}
-                      and{" "}
-                      <code className="text-[#22d3ee]">public/images/helium-hero.png</code>{" "}
-                      (poster).
-                    </p>
-                  </div>
-                )}
-                <video
-                  key={dIdVideoUrl ?? "none"}
-                  ref={videoRef}
-                  src={dIdVideoUrl ?? undefined}
-                  playsInline
-                  className={`absolute inset-0 z-10 h-full w-full object-cover [object-position:center_12%] transition-opacity duration-500 ease-out ${
-                    videoLayerVisible && dIdVideoUrl
-                      ? "opacity-100"
-                      : "pointer-events-none opacity-0"
-                  }`}
-                  onEnded={onVideoEnded}
-                  onTransitionEnd={onVideoTransitionEnd}
-                  aria-hidden={!dIdVideoUrl}
-                />
-              </div>
-            </div>
+                  <span
+                    className="pointer-events-none absolute right-2 top-2 z-20 h-3.5 w-3.5 border-r-2 border-t-2 border-[var(--blue)]"
+                    aria-hidden
+                  />
+                  <span
+                    className="pointer-events-none absolute bottom-2 left-2 z-20 h-3.5 w-3.5 border-b-2 border-l-2 border-[var(--blue)]"
+                    aria-hidden
+                  />
+                  <span
+                    className="pointer-events-none absolute bottom-2 right-2 z-20 h-3.5 w-3.5 border-b-2 border-r-2 border-[var(--blue)]"
+                    aria-hidden
+                  />
 
-            <div className="flex flex-col gap-2 px-0.5">
-              <p className="font-mono-tech flex flex-wrap items-center gap-2 text-xs tracking-wide text-zinc-400">
-                <span className="text-zinc-400">VOICE</span>
-                <span
-                  className="rounded bg-white/5 px-2 py-0.5 text-[#22d3ee]"
-                  role="status"
-                  aria-live="polite"
-                  aria-label={`Voice status: ${voiceStatus}`}
-                >
-                  {voiceStatus}
-                </span>
-                {loading || speaking ? (
-                  <button
-                    type="button"
-                    aria-label="Stop response and voice"
-                    onClick={stopActiveChat}
-                    className={`inline-flex items-center gap-1.5 rounded-full border border-[#22d3ee]/45 bg-white/[0.06] px-2.5 py-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] backdrop-blur-md transition hover:border-[#22d3ee]/70 hover:bg-[#22d3ee]/10 ${FOCUS_VISIBLE_RING}`}
-                  >
-                    <span
-                      className="inline-block h-2 w-2 shrink-0 rounded-[2px] bg-[#22d3ee]"
-                      aria-hidden
+                  <div className="relative isolate aspect-square h-full min-h-[160px] w-full overflow-hidden bg-[#0a1218] md:aspect-auto md:h-full md:min-h-0">
+                    {!heroBroken ? (
+                      <video
+                        ref={idleVideoRef}
+                        className="absolute inset-0 z-0 h-full w-full object-cover object-[center_12%]"
+                        src={HERO_IDLE_VIDEO}
+                        poster="/images/helium-hero.png"
+                        autoPlay
+                        loop
+                        muted
+                        playsInline
+                        preload="auto"
+                        aria-label="Helium Hero character loop"
+                        onError={() => setHeroBroken(true)}
+                      />
+                    ) : (
+                      <div className="flex h-full w-full flex-col items-center justify-center gap-2 px-4 text-center">
+                        <span className="font-heading text-4xl font-bold text-[var(--blue)]">
+                          He
+                        </span>
+                        <p className="font-body text-xs font-light text-[var(--dim)]">
+                          Add{" "}
+                          <code className="text-[var(--steel)]">
+                            public/video/duplexnyc_Helium_Hero_full_body_superhero_standing_heroic_pos_a50e06aa-8550-4525-82a3-32a1887d542f_0.mp4
+                          </code>{" "}
+                          and{" "}
+                          <code className="text-[var(--steel)]">
+                            public/images/helium-hero.png
+                          </code>{" "}
+                          (poster).
+                        </p>
+                      </div>
+                    )}
+                    <video
+                      key={dIdVideoUrl ?? "none"}
+                      ref={videoRef}
+                      src={dIdVideoUrl ?? undefined}
+                      playsInline
+                      className={`absolute inset-0 z-10 h-full w-full object-cover object-[center_12%] transition-opacity duration-500 ease-out ${
+                        videoLayerVisible && dIdVideoUrl
+                          ? "opacity-100"
+                          : "pointer-events-none opacity-0"
+                      }`}
+                      onEnded={onVideoEnded}
+                      onTransitionEnd={onVideoTransitionEnd}
+                      aria-hidden={!dIdVideoUrl}
                     />
-                    <span className="text-xs font-semibold uppercase tracking-wide text-[#22d3ee]">
-                      Stop
-                    </span>
-                  </button>
-                ) : null}
-                <button
-                  type="button"
-                  className={`rounded text-[#22d3ee]/80 underline-offset-2 hover:text-[#22d3ee] hover:underline ${FOCUS_VISIBLE_RING}`}
-                  onClick={() => setVoicePanelOpen((o) => !o)}
-                >
-                  {voicePanelOpen ? "Close" : "Change voice"}
-                </button>
-              </p>
-              {voiceHint ? (
-                <p className="font-mono-tech text-xs leading-relaxed text-amber-200">
-                  {voiceHint}
-                </p>
-              ) : null}
-              {voicePanelOpen ? (
-                <div className="glass-panel rounded-xl p-3 text-left">
-                  <label
-                    htmlFor="eleven-voice-id"
-                    className="font-mono-tech text-xs uppercase tracking-wider text-zinc-400"
-                  >
-                    ElevenLabs voice ID
-                  </label>
-                  <input
-                    id="eleven-voice-id"
-                    value={voiceIdDraft}
-                    onChange={(e) => setVoiceIdDraft(e.target.value)}
-                    placeholder="Paste voice ID"
-                    className={`mt-2 w-full rounded-lg border border-white/15 bg-black/40 px-3 py-2 font-mono-tech text-xs text-white outline-none placeholder:text-zinc-400 focus:border-[#22d3ee]/45 focus-visible:border-[#22d3ee]/45 ${FOCUS_VISIBLE_RING}`}
-                    autoComplete="off"
-                  />
-                  <p className="mt-2 text-sm leading-snug text-zinc-400">
-                    Empty + Save uses server{" "}
-                    <code className="text-zinc-400">ELEVENLABS_VOICE_ID</code>.
-                  </p>
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    <button
-                      type="button"
-                      onClick={persistVoiceId}
-                      className={`rounded-lg bg-gradient-to-r from-[#f472b6] to-[#22d3ee] px-3 py-1.5 font-mono-tech text-xs font-semibold text-[#050510] ${FOCUS_VISIBLE_RING}`}
-                    >
-                      Save
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setVoicePanelOpen(false)}
-                      className={`rounded-lg border border-white/15 px-3 py-1.5 font-mono-tech text-xs text-zinc-300 ${FOCUS_VISIBLE_RING}`}
-                    >
-                      Cancel
-                    </button>
                   </div>
                 </div>
-              ) : null}
-              <p className="font-mono-tech text-xs text-zinc-400">
-                {elevenVoiceId.trim()
-                  ? `Saved: ${elevenVoiceId.slice(0, 10)}…`
-                  : "Voice ID: server default"}
-              </p>
-            </div>
-          </aside>
 
-          {/* Chat ~60% desktop */}
-          <div className="flex min-h-0 w-full flex-1 flex-col lg:w-[60%] lg:min-w-0">
-            <div className="glass-panel flex min-h-[min(52vh,480px)] flex-1 flex-col overflow-hidden rounded-2xl lg:min-h-[min(72vh,820px)]">
-              {thread.length > 0 ? (
-                <div className="flex shrink-0 items-center justify-end border-b border-white/[0.08] bg-black/20 px-3 py-2 sm:px-4">
+                <div className="flex w-full max-w-[200px] flex-col gap-3 md:max-w-none">
+                  <div className="font-label flex items-center gap-2 text-[0.6rem] text-[var(--steel)]">
+                    <span
+                      className={`h-1.5 w-1.5 shrink-0 rounded-full ${
+                        heroRing
+                          ? "bg-[var(--blue)] animate-status-blink"
+                          : "bg-[#33aa99]"
+                      }`}
+                      aria-hidden
+                    />
+                    <span
+                      role="status"
+                      aria-live="polite"
+                      aria-label={`Voice status: ${voiceStatus}`}
+                      className="tracking-wide text-[var(--dim)]"
+                    >
+                      {voiceUiLabel}
+                    </span>
+                  </div>
+
+                  <div className="font-label flex flex-wrap items-center gap-2 text-[0.65rem] text-[var(--dim)]">
+                    {loading || speaking ? (
+                      <button
+                        type="button"
+                        aria-label="Stop response and voice"
+                        onClick={stopActiveChat}
+                        className={`inline-flex items-center gap-1.5 rounded-full border border-[rgba(168,216,240,0.28)] bg-[rgba(168,216,240,0.08)] px-2 py-1 font-semibold uppercase tracking-wide text-[var(--blue)] transition hover:border-[var(--blue)]/50 ${FOCUS_VISIBLE_RING}`}
+                      >
+                        Stop
+                      </button>
+                    ) : null}
+                    <button
+                      type="button"
+                      className={`text-[var(--blue)] underline-offset-2 hover:underline ${FOCUS_VISIBLE_RING}`}
+                      onClick={() => setVoicePanelOpen((o) => !o)}
+                    >
+                      {voicePanelOpen ? "Close" : "Change voice"}
+                    </button>
+                  </div>
+                  {voiceHint ? (
+                    <p className="font-label text-[0.65rem] leading-relaxed text-amber-200/90">
+                      {voiceHint}
+                    </p>
+                  ) : null}
+                  {voicePanelOpen ? (
+                    <div className="surface-card rounded-lg p-3 text-left">
+                      <label
+                        htmlFor="eleven-voice-id"
+                        className="font-label text-[0.65rem] uppercase tracking-wider text-[var(--steel)]"
+                      >
+                        ElevenLabs voice ID
+                      </label>
+                      <input
+                        id="eleven-voice-id"
+                        value={voiceIdDraft}
+                        onChange={(e) => setVoiceIdDraft(e.target.value)}
+                        placeholder="Paste voice ID"
+                        className={`font-label mt-2 w-full rounded-md border border-[var(--border)] bg-[rgba(255,255,255,0.04)] px-3 py-2 text-xs text-[var(--white)] outline-none placeholder:text-[var(--dim)] focus:border-[rgba(168,216,240,0.38)] ${FOCUS_VISIBLE_RING}`}
+                        autoComplete="off"
+                      />
+                      <p className="font-body mt-2 text-xs font-light leading-snug text-[var(--dim)]">
+                        Empty + Save uses server{" "}
+                        <code className="text-[var(--steel)]">
+                          ELEVENLABS_VOICE_ID
+                        </code>
+                        .
+                      </p>
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        <button
+                          type="button"
+                          onClick={persistVoiceId}
+                          className={`font-heading rounded-md bg-[rgba(168,216,240,0.12)] px-3 py-1.5 text-xs font-semibold text-[var(--blue)] ring-1 ring-[rgba(168,216,240,0.28)] ${FOCUS_VISIBLE_RING}`}
+                        >
+                          Save
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setVoicePanelOpen(false)}
+                          className={`font-label rounded-md border border-[var(--border)] px-3 py-1.5 text-xs text-[var(--dim)] ${FOCUS_VISIBLE_RING}`}
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  ) : null}
+                  <p className="font-label text-[0.6rem] text-[var(--steel)]">
+                    {elevenVoiceId.trim()
+                      ? `Saved: ${elevenVoiceId.slice(0, 10)}…`
+                      : "Voice ID: server default"}
+                  </p>
+                </div>
+              </div>
+
+              <div className="min-w-0 space-y-5 text-center md:text-left">
+                <p className="font-label text-[0.6rem] tracking-[0.2em] text-[var(--steel)]">
+                  GUARDIAN OF THE NOBLE GASES
+                </p>
+                <h1
+                  id="hero-name"
+                  className="font-heading text-[clamp(2.6rem,6vw,4.2rem)] max-[640px]:text-[2.6rem] font-bold leading-[0.9] text-[var(--blue)]"
+                >
+                  <span className="block">HELIUM</span>
+                  <span className="block">HERO</span>
+                </h1>
+                <p className="font-body mx-auto max-w-xl text-[0.88rem] font-light leading-relaxed text-[var(--dim)] md:mx-0">
+                  Chat with the noble gas — explore helium through conversation.
+                </p>
+
+                <div className="grid max-[640px]:grid-cols-2 grid-cols-4 gap-2 sm:gap-2">
+                  {HERO_STATS.map((cell) => (
+                    <div
+                      key={`${cell.label}-${cell.value}`}
+                      className="surface-card rounded-lg px-3 py-2.5 text-left"
+                    >
+                      <p className="font-label text-[0.5rem] uppercase tracking-wide text-[var(--steel)]">
+                        {cell.label}
+                      </p>
+                      <p className="font-heading mt-1 text-[1.05rem] font-semibold leading-tight text-[var(--ice)]">
+                        {cell.value}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="space-y-3">
+                  {ABILITY_BARS.map((a, i) => (
+                    <div key={a.label}>
+                      <p className="font-body mb-1 text-[0.75rem] font-light text-[var(--dim)]">
+                        {a.label}
+                      </p>
+                      <div className="h-2 overflow-hidden rounded-sm bg-[rgba(255,255,255,0.07)]">
+                        <div
+                          className="ability-fill h-full rounded-sm bg-gradient-to-r from-[var(--steel)] to-[var(--blue)]"
+                          style={{
+                            width: `${a.pct}%`,
+                            animationDelay: `${0.12 + i * 0.12}s`,
+                          }}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </section>
+
+            <section
+              className="surface-card flex flex-col gap-6 rounded-2xl p-5 sm:p-6 md:flex-row md:items-stretch md:gap-8 lg:p-[1.25rem_1.5rem]"
+              aria-labelledby="atmosphere-heading"
+            >
+              <div className="min-w-0 flex-1 space-y-4">
+                <h2
+                  id="atmosphere-heading"
+                  className="font-label text-[0.6rem] tracking-[0.15em] text-[var(--steel)]"
+                >
+                  EARTH&apos;S ATMOSPHERE COMPOSITION
+                </h2>
+                <div className="space-y-3">
+                  {ATMOSPHERE_ROWS.map((row) => {
+                    const barW =
+                      row.pct < 0.02
+                        ? Math.max(row.pct * 1200, row.highlight ? 6 : 2)
+                        : row.pct;
+                    return (
+                      <div
+                        key={row.name}
+                        className="flex items-center gap-3"
+                      >
+                        <span
+                          className={`font-body w-[120px] min-w-[120px] shrink-0 text-[0.8rem] font-light ${row.highlight ? "font-medium text-[var(--blue)]" : "text-[var(--dim)]"}`}
+                        >
+                          {row.name}
+                        </span>
+                        <div className="relative h-2 min-w-0 flex-1 overflow-hidden rounded-full bg-[rgba(255,255,255,0.06)]">
+                          <span
+                            className="absolute inset-y-0 left-0 rounded-full"
+                            style={{
+                              width: `${Math.min(barW, 100)}%`,
+                              minWidth: row.highlight ? "4px" : undefined,
+                              background: row.fill,
+                              boxShadow: row.highlight
+                                ? "0 0 12px 2px rgba(168,216,240,0.35)"
+                                : undefined,
+                            }}
+                          />
+                        </div>
+                        <span className="font-label w-14 shrink-0 text-right text-[0.6rem] tabular-nums text-[var(--steel)]">
+                          {row.pct < 0.01
+                            ? `${row.pct.toFixed(4)}%`
+                            : `${row.pct}%`}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+                <p className="font-body pt-1 text-[0.75rem] font-light italic leading-relaxed text-[var(--dim)]">
+                  Helium is so light it escapes Earth&apos;s gravity — constantly
+                  drifting into space.
+                </p>
+              </div>
+              <div className="flex min-w-0 flex-col items-stretch justify-center max-[640px]:w-full md:w-auto">
+                <div className="surface-card flex min-w-[110px] flex-col items-center justify-center rounded-xl bg-[rgba(168,216,240,0.06)] px-6 py-8 text-center max-[640px]:w-full">
+                  <p className="font-heading text-3xl font-bold text-[var(--blue)]">
+                    He
+                  </p>
+                  <p className="font-label mt-2 text-[0.55rem] tracking-wide text-[var(--steel)]">
+                    NOBLE GAS
+                  </p>
+                  <p className="font-body mt-4 max-w-[12rem] text-[0.7rem] font-light text-[var(--dim)]">
+                    24% of the universe by mass
+                  </p>
+                </div>
+              </div>
+            </section>
+
+            <section
+              className="surface-card overflow-hidden rounded-2xl"
+              aria-label="Chat with Helium Hero"
+            >
+              <header className="flex items-center justify-between gap-3 border-b border-[var(--border)] px-4 py-3 sm:px-5">
+                <div className="flex min-w-0 items-center gap-3">
+                  <div className="font-heading flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[rgba(168,216,240,0.1)] text-xs font-semibold text-[var(--blue)]">
+                    He
+                  </div>
+                  <p className="font-label truncate text-[0.6rem] tracking-wide text-[var(--steel)]">
+                    ASK HELIUM HERO ANYTHING
+                  </p>
+                </div>
+                {thread.length > 0 ? (
                   <button
                     type="button"
                     aria-label="Clear chat"
                     onClick={clearChat}
-                    className={`inline-flex items-center gap-1.5 rounded-full border border-[#22d3ee]/45 bg-white/[0.06] px-2.5 py-1.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] backdrop-blur-md transition hover:border-[#22d3ee]/70 hover:bg-[#22d3ee]/10 ${FOCUS_VISIBLE_RING}`}
+                    className={`font-label inline-flex shrink-0 items-center gap-1.5 rounded-full border border-[rgba(168,216,240,0.28)] bg-[rgba(255,255,255,0.03)] px-2.5 py-1.5 text-[0.65rem] uppercase tracking-wide text-[var(--blue)] transition hover:border-[var(--blue)]/55 hover:bg-[rgba(168,216,240,0.09)] ${FOCUS_VISIBLE_RING}`}
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
-                      width="14"
-                      height="14"
+                      width="13"
+                      height="13"
                       viewBox="0 0 24 24"
                       fill="none"
                       stroke="currentColor"
                       strokeWidth="2"
                       strokeLinecap="round"
                       strokeLinejoin="round"
-                      className="shrink-0 text-[#22d3ee]"
+                      className="shrink-0"
                       aria-hidden
                     >
                       <path d="M3 6h18" />
@@ -1066,18 +1237,17 @@ export function HeliumHeroApp() {
                       <line x1="10" x2="10" y1="11" y2="17" />
                       <line x1="14" x2="14" y1="11" y2="17" />
                     </svg>
-                    <span className="font-mono-tech text-xs font-semibold uppercase tracking-wide text-[#22d3ee]">
-                      Clear
-                    </span>
+                    Clear
                   </button>
-                </div>
-              ) : null}
+                ) : null}
+              </header>
+
               <div
                 ref={listRef}
                 role="log"
                 aria-live="polite"
                 aria-relevant="additions text"
-                className="min-h-0 flex-1 space-y-3 overflow-y-auto p-4 sm:p-5"
+                className="h-[260px] max-[640px]:h-[220px] space-y-3 overflow-y-auto px-4 py-4 sm:px-5"
               >
                 <div className="animate-slide-in-msg flex justify-start">
                   <AssistantBubble>{WELCOME_MESSAGE.content}</AssistantBubble>
@@ -1097,7 +1267,7 @@ export function HeliumHeroApp() {
                       className={`animate-slide-in-msg flex ${m.role === "user" ? "justify-end" : "justify-start"}`}
                     >
                       {m.role === "user" ? (
-                        <div className="max-w-[85%] rounded-2xl rounded-br-md border border-white/[0.12] bg-white/[0.07] px-4 py-3 text-sm text-white shadow-lg backdrop-blur-sm sm:text-[15px]">
+                        <div className="font-body max-w-[85%] rounded-2xl rounded-tr-[0.2rem] bg-[rgba(255,255,255,0.05)] px-4 py-3 text-[0.88rem] font-light leading-relaxed text-[var(--white)] sm:text-[0.92rem]">
                           {m.content}
                         </div>
                       ) : isLiveTyping ? (
@@ -1113,7 +1283,7 @@ export function HeliumHeroApp() {
                               {typingDotsRow}
                             </div>
                             <p
-                              className={`whitespace-pre-wrap text-sm leading-relaxed text-zinc-100 transition-opacity duration-200 ease-out sm:text-[15px] ${
+                              className={`whitespace-pre-wrap text-[0.88rem] font-light leading-relaxed text-[var(--white)] transition-opacity duration-200 ease-out sm:text-[0.92rem] ${
                                 typeRevealLen === 0 ? "opacity-0" : "opacity-100"
                               }`}
                             >
@@ -1129,15 +1299,15 @@ export function HeliumHeroApp() {
                 })}
                 {loading && (
                   <div className="flex justify-start animate-slide-in-msg">
-                    <div className="flex items-center gap-1 rounded-xl border border-white/10 bg-white/[0.06] px-4 py-3 backdrop-blur-sm">
+                    <div className="flex items-center gap-1 rounded-2xl rounded-tl-[0.2rem] border border-[rgba(168,216,240,0.14)] bg-[rgba(168,216,240,0.06)] px-4 py-3">
                       {typingDotsRow}
                     </div>
                   </div>
                 )}
               </div>
 
-              <div className="shrink-0 border-t border-white/5 bg-black/35 backdrop-blur-3xl">
-                <div className="flex gap-2 overflow-x-auto px-3 py-2.5 [scrollbar-width:thin]">
+              <div className="border-t border-[var(--border)] bg-transparent">
+                <div className="flex flex-wrap gap-2 overflow-x-auto px-4 py-3 sm:px-5 [scrollbar-width:thin]">
                   {QUICK_PROMPTS.map((q) => (
                     <button
                       key={q.label}
@@ -1145,7 +1315,7 @@ export function HeliumHeroApp() {
                       disabled={loading}
                       onClick={() => void sendChat(q.text)}
                       aria-label={q.text}
-                      className={`shrink-0 whitespace-nowrap rounded-full border border-white/12 bg-white/[0.06] px-3 py-2 text-xs text-zinc-200 transition hover:border-[#22d3ee]/40 hover:bg-[#22d3ee]/10 disabled:opacity-50 sm:text-sm ${FOCUS_VISIBLE_RING}`}
+                      className={`font-body shrink-0 whitespace-nowrap rounded-[2rem] border border-[rgba(168,216,240,0.14)] bg-[rgba(255,255,255,0.03)] px-3 py-2 text-[0.73rem] font-normal text-[var(--white)] transition hover:border-[rgba(168,216,240,0.35)] hover:bg-[rgba(168,216,240,0.09)] disabled:opacity-50 ${FOCUS_VISIBLE_RING}`}
                     >
                       {q.label}
                     </button>
@@ -1153,11 +1323,11 @@ export function HeliumHeroApp() {
                 </div>
 
                 {showSoundUnlock ? (
-                  <div className="border-t border-white/[0.08] px-3 py-2">
+                  <div className="border-t border-[var(--border)] px-4 py-2 sm:px-5">
                     <button
                       type="button"
                       aria-label="Enable sound: unmute Helium Hero voice and video after the browser blocked playback until you interact"
-                      className={`w-full rounded-xl border border-[#22d3ee]/50 bg-[#050510]/90 py-2.5 font-mono-tech text-xs font-semibold text-[#22d3ee] shadow-[0_0_24px_rgba(34,211,238,0.15)] transition hover:bg-[#22d3ee]/10 ${FOCUS_VISIBLE_RING}`}
+                      className={`font-label w-full rounded-lg border border-[rgba(168,216,240,0.35)] bg-[rgba(168,216,240,0.08)] py-2.5 text-[0.7rem] font-semibold uppercase tracking-wide text-[var(--blue)] transition hover:bg-[rgba(168,216,240,0.12)] ${FOCUS_VISIBLE_RING}`}
                       onClick={() => void soundUnlockRef.current?.()}
                     >
                       Enable sound
@@ -1166,57 +1336,55 @@ export function HeliumHeroApp() {
                 ) : null}
 
                 <form
-                  className="border-t border-white/[0.08] p-3 sm:p-4"
+                  className="border-t border-[var(--border)] p-4 sm:p-5"
                   onSubmit={onSubmit}
                 >
-                <div className="flex gap-2 sm:gap-3">
-                  <input
-                    id="chat-message-input"
-                    value={input}
-                    onChange={(e) => setInput(e.target.value)}
-                    placeholder="Ask Helium Hero…"
-                    className={`font-mono-tech min-w-0 flex-1 rounded-xl border border-white/12 bg-white/[0.04] px-4 py-3 text-sm text-white outline-none transition placeholder:text-zinc-400 focus:border-[#22d3ee]/45 focus-visible:border-[#22d3ee]/45 sm:text-[15px] ${FOCUS_VISIBLE_RING}`}
-                    disabled={loading}
-                    aria-label="Message to Helium Hero"
-                  />
-                  <button
-                    type="submit"
-                    disabled={loading || !input.trim()}
-                    className={`shrink-0 rounded-xl bg-gradient-to-r from-[#f472b6] via-[#a78bfa] to-[#22d3ee] px-5 py-3 text-sm font-bold tracking-wide text-[#050510] shadow-[0_0_28px_rgba(34,211,238,0.25)] transition hover:brightness-110 disabled:opacity-40 sm:px-7 ${FOCUS_VISIBLE_RING}`}
-                  >
-                    Send
-                  </button>
-                </div>
+                  <div className="flex gap-2 sm:gap-3">
+                    <input
+                      id="chat-message-input"
+                      value={input}
+                      onChange={(e) => setInput(e.target.value)}
+                      placeholder="Ask Helium Hero…"
+                      className={`font-body min-w-0 flex-1 rounded-lg border border-[var(--border)] bg-[rgba(255,255,255,0.04)] px-4 py-3 text-[0.88rem] font-light text-[var(--white)] outline-none transition placeholder:text-[var(--dim)] focus:border-[rgba(168,216,240,0.38)] ${FOCUS_VISIBLE_RING}`}
+                      disabled={loading}
+                      aria-label="Message to Helium Hero"
+                    />
+                    <button
+                      type="submit"
+                      disabled={loading || !input.trim()}
+                      className={`font-heading shrink-0 rounded-lg border border-[rgba(168,216,240,0.28)] bg-[rgba(168,216,240,0.1)] px-5 py-3 text-[0.88rem] font-semibold text-[var(--blue)] transition hover:border-[var(--blue)]/45 hover:bg-[rgba(168,216,240,0.14)] disabled:opacity-40 ${FOCUS_VISIBLE_RING}`}
+                    >
+                      Send
+                    </button>
+                  </div>
                 </form>
               </div>
-            </div>
-          </div>
-        </div>
+            </section>
 
-        <section className="mt-12 sm:mt-16">
-          <h2 className="font-mono-tech text-center text-xs uppercase tracking-[0.4em] text-zinc-400">
-            Knowledge matrix
-          </h2>
-          <p className="font-heading mt-2 text-center text-lg text-[#fbbf24] sm:text-xl">
-            Fast facts
-          </p>
-          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:gap-5">
-            {FAST_FACTS.map((f) => (
-              <article
-                key={f.title}
-                className="glass-panel group rounded-2xl p-5 transition-all duration-300 ease-out hover:-translate-y-[2px] hover:border-[#a78bfa]/30 hover:shadow-[0_26px_55px_rgba(0,0,0,0.42),0_0_0_1px_rgba(167,139,250,0.1),inset_0_0_22px_rgba(34,211,238,0.035)] sm:p-6"
-              >
-                <h3 className="font-heading text-sm font-semibold text-[#fbbf24] sm:text-base">
-                  {f.title}
-                </h3>
-                <p className="mt-2 text-sm leading-relaxed text-zinc-400 sm:text-[15px]">
-                  {f.body}
-                </p>
-              </article>
-            ))}
-          </div>
-        </section>
-      </main>
-    </div>
+            <section aria-labelledby="facts-heading">
+              <h2 id="facts-heading" className="sr-only">
+                Helium facts
+              </h2>
+              <div className="grid grid-cols-3 gap-[0.6rem] max-[640px]:grid-cols-2 max-[400px]:grid-cols-1">
+                {FACT_CARDS.map((f) => (
+                  <article
+                    key={f.title}
+                    className="surface-card rounded-xl px-[1rem] py-[0.85rem]"
+                  >
+                    <span className="text-base" aria-hidden>
+                      {f.emoji}
+                    </span>
+                    <h3 className="font-heading mt-2 text-[0.85rem] font-semibold leading-snug text-[var(--blue)]">
+                      {f.title}
+                    </h3>
+                    <p className="font-body mt-1.5 text-[0.75rem] font-light leading-relaxed text-[var(--dim)]">
+                      {f.body}
+                    </p>
+                  </article>
+                ))}
+              </div>
+            </section>
+          </main>
+        </div>
   );
 }
