@@ -943,11 +943,11 @@ export function HeliumHeroApp() {
             {/* ── Top section: hero info + chat side-by-side on lg ── */}
             <section
               aria-labelledby="hero-name"
-              className="grid gap-6 lg:grid-cols-[minmax(340px,1fr)_minmax(380px,1.2fr)] lg:items-start lg:gap-8"
+              className="grid gap-6 lg:grid-cols-[minmax(320px,2fr)_minmax(400px,3fr)] lg:items-start lg:gap-8"
             >
               {/* Left column: portrait + info */}
               <div className="space-y-6">
-              <div className="grid gap-6 md:grid-cols-[minmax(200px,260px)_1fr] md:items-start md:gap-8">
+              <div className="flex flex-col items-center gap-6 sm:flex-row sm:items-start sm:gap-8 lg:flex-col lg:items-start">
               <div className="flex flex-col items-center gap-4 md:items-start">
                 <div
                   role="region"
@@ -1097,47 +1097,6 @@ export function HeliumHeroApp() {
                   ))}
                 </div>
 
-                <div className="space-y-4">
-                  <p className="font-label text-[0.58rem] uppercase tracking-[0.12em] text-[var(--steel)]">
-                    Ability ratings — with definitions
-                  </p>
-                  {ABILITY_BARS.map((a, i) => (
-                    <div key={a.label} className="space-y-1.5">
-                      <div className="flex flex-wrap items-baseline justify-between gap-2">
-                        <span className="font-heading text-[0.9rem] font-semibold capitalize text-[var(--ice)] sm:text-[0.95rem]">
-                          {a.label}
-                        </span>
-                        <span className="font-label text-[0.65rem] tabular-nums text-[var(--steel)]">
-                          {a.pct}%
-                        </span>
-                      </div>
-                      <p className="font-body text-[0.78rem] font-normal leading-snug text-[var(--muted)] sm:text-[0.8rem]">
-                        <span className="font-label text-[0.58rem] uppercase tracking-wide text-[var(--blue)]">
-                          Definition —{" "}
-                        </span>
-                        {a.definition}
-                      </p>
-                      <p className="font-body text-[0.78rem] font-normal leading-snug text-[var(--muted)] sm:text-[0.8rem]">
-                        <span className="font-semibold text-[var(--ice)]">
-                          For helium:{" "}
-                        </span>
-                        {a.meaning}
-                      </p>
-                      <div
-                        className="h-2 overflow-hidden rounded-sm bg-[rgba(255,255,255,0.07)]"
-                        aria-hidden
-                      >
-                        <div
-                          className="ability-fill h-full rounded-sm bg-gradient-to-r from-[var(--steel)] to-[var(--blue)]"
-                          style={{
-                            width: `${a.pct}%`,
-                            animationDelay: `${0.12 + i * 0.12}s`,
-                          }}
-                        />
-                      </div>
-                    </div>
-                  ))}
-                </div>
               </div>
               </div>
               </div>
@@ -1333,6 +1292,51 @@ export function HeliumHeroApp() {
                   </div>
                 </form>
               </div>
+              </div>
+            </section>
+
+            {/* Ability bars — own section below the hero+chat grid */}
+            <section className="surface-card rounded-2xl p-5 sm:p-6">
+              <p className="font-label text-[0.58rem] uppercase tracking-[0.12em] text-[var(--steel)]">
+                Ability ratings — with definitions
+              </p>
+              <div className="mt-4 grid gap-5 sm:grid-cols-2">
+                {ABILITY_BARS.map((a, i) => (
+                  <div key={a.label} className="space-y-1.5">
+                    <div className="flex flex-wrap items-baseline justify-between gap-2">
+                      <span className="font-heading text-[0.9rem] font-semibold capitalize text-[var(--ice)] sm:text-[0.95rem]">
+                        {a.label}
+                      </span>
+                      <span className="font-label text-[0.65rem] tabular-nums text-[var(--steel)]">
+                        {a.pct}%
+                      </span>
+                    </div>
+                    <p className="font-body text-[0.78rem] font-normal leading-snug text-[var(--muted)] sm:text-[0.8rem]">
+                      <span className="font-label text-[0.58rem] uppercase tracking-wide text-[var(--blue)]">
+                        Definition —{" "}
+                      </span>
+                      {a.definition}
+                    </p>
+                    <p className="font-body text-[0.78rem] font-normal leading-snug text-[var(--muted)] sm:text-[0.8rem]">
+                      <span className="font-semibold text-[var(--ice)]">
+                        For helium:{" "}
+                      </span>
+                      {a.meaning}
+                    </p>
+                    <div
+                      className="h-2 overflow-hidden rounded-sm bg-[rgba(255,255,255,0.07)]"
+                      aria-hidden
+                    >
+                      <div
+                        className="ability-fill h-full rounded-sm bg-gradient-to-r from-[var(--steel)] to-[var(--blue)]"
+                        style={{
+                          width: `${a.pct}%`,
+                          animationDelay: `${0.12 + i * 0.12}s`,
+                        }}
+                      />
+                    </div>
+                  </div>
+                ))}
               </div>
             </section>
 
