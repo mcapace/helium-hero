@@ -123,31 +123,12 @@ body {
   );
 }
 
-.tech-scanlines {
-  position: relative;
-}
-
-.tech-scanlines::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background: repeating-linear-gradient(
-    0deg,
-    transparent,
-    transparent 2px,
-    rgba(0, 0, 0, 0.12) 2px,
-    rgba(0, 0, 0, 0.12) 3px
-  );
-  opacity: 0.35;
-}
-
-.tech-sweep {
-  animation: scan-line 7s linear infinite;
+.tech-sweep-slow {
+  animation: scan-line 16s linear infinite;
   background: linear-gradient(
     180deg,
     transparent,
-    rgba(34, 211, 238, 0.07),
+    rgba(34, 211, 238, 0.05),
     transparent
   );
   height: 40%;
@@ -196,4 +177,13 @@ body {
 
 .font-mono-tech {
   font-family: var(--font-mono-tech), ui-monospace, monospace;
+}
+
+/* Hide scrollbar but keep scrolling */
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
 }
