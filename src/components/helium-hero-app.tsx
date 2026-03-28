@@ -993,8 +993,23 @@ export function HeliumHeroApp() {
               aria-labelledby="hero-name"
               className="grid gap-6 lg:grid-cols-[minmax(320px,2fr)_minmax(400px,3fr)] lg:items-start lg:gap-8"
             >
-              {/* Left column: portrait + info */}
+              {/* Left column: title + portrait + info */}
               <div className="space-y-6">
+              <div className="min-w-0 space-y-4 text-center md:text-left">
+                <p className="font-label text-[0.6rem] tracking-[0.2em] text-[var(--steel)]">
+                  GUARDIAN OF THE NOBLE GASES
+                </p>
+                <h1
+                  id="hero-name"
+                  className="font-heading text-[clamp(2.6rem,6vw,4.2rem)] max-[640px]:text-[2.6rem] font-bold leading-[0.9] text-[var(--blue)]"
+                >
+                  <span className="block">HELIUM</span>
+                  <span className="block">HERO</span>
+                </h1>
+                <p className="font-body mx-auto max-w-xl text-[0.94rem] font-normal leading-[1.6] text-[var(--muted)] md:mx-0">
+                  Chat with the noble gas — explore helium through conversation.
+                </p>
+              </div>
               <div className="flex flex-col gap-6">
               <div className="flex flex-col gap-4">
                 <div
@@ -1113,22 +1128,8 @@ export function HeliumHeroApp() {
                 </div>
               </div>
 
-              {/* Left column: title, stats, ability bars */}
+              {/* Stats grid */}
               <div className="min-w-0 space-y-5 text-center md:text-left">
-                <p className="font-label text-[0.6rem] tracking-[0.2em] text-[var(--steel)]">
-                  GUARDIAN OF THE NOBLE GASES
-                </p>
-                <h1
-                  id="hero-name"
-                  className="font-heading text-[clamp(2.6rem,6vw,4.2rem)] max-[640px]:text-[2.6rem] font-bold leading-[0.9] text-[var(--blue)]"
-                >
-                  <span className="block">HELIUM</span>
-                  <span className="block">HERO</span>
-                </h1>
-                <p className="font-body mx-auto max-w-xl text-[0.94rem] font-normal leading-[1.6] text-[var(--muted)] md:mx-0">
-                  Chat with the noble gas — explore helium through conversation.
-                </p>
-
                 <div className="grid max-[640px]:grid-cols-2 grid-cols-4 gap-2 sm:gap-2">
                   {HERO_STATS.map((cell) => (
                     <div
