@@ -172,7 +172,7 @@ const WELCOME_MESSAGE: ChatMessage = {
 };
 
 const INTRO_SCRIPT = [
-  "Hey there, sixth graders! I'm Helium Hero, and I am literally the element helium. That's right, atomic number 2, the second most abundant element in the entire universe. About 24 percent of all the stuff you can see in space is me.",
+  "So my best friend Michael asked me to help him with this project, and honestly, who better to explain helium than helium itself? Hey there sixth graders! I'm Helium Hero, and I am literally the element helium. That's right, atomic number 2, the second most abundant element in the entire universe. About 24 percent of all the stuff you can see in space is me.",
   "So here's my origin story. I was born in the Big Bang, the very first moments of the universe, almost 14 billion years ago. Scientists actually discovered me by looking at the Sun before they even found me on Earth. That's why I'm named after Helios, the Greek god of the Sun.",
   "Now let me tell you what makes me special. I'm a noble gas, which means I don't react with anything. I'm the calmest, chillest element on the periodic table. I also have the lowest boiling point of any element, negative 269 degrees Celsius. That's only about 4 degrees above absolute zero.",
   "You probably know me from balloons, right? I make them float because I'm 7 times lighter than air. But I do way cooler stuff than that. I cool down the giant magnets inside MRI machines at hospitals. NASA uses me to pressurize rocket fuel tanks. I help scientists at the Large Hadron Collider study the tiniest particles in existence.",
@@ -1319,7 +1319,7 @@ export function HeliumHeroApp() {
                       Meet Helium Hero
                     </p>
                     <p className="font-body max-w-sm text-[0.9rem] leading-relaxed text-[var(--muted)]">
-                      So my best friend Michael asked me to help him with this project, and honestly, who better to explain helium than helium itself?
+                      Click below to hear Helium Hero introduce himself.
                     </p>
                     <button
                       type="button"
