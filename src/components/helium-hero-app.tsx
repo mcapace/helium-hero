@@ -168,8 +168,17 @@ const GAS_PRESETS = Array.from({ length: 18 }, (_, i) => ({
 const WELCOME_MESSAGE: ChatMessage = {
   role: "assistant",
   content:
-    "Hey, sixth-grade legend — I'm Helium Hero. Ask me wild questions about helium and space (I might go on a silly tangent first). Keep it respectful or Mr. Cotter hears about it. What's your first question? 🎈",
+    "That's my intro! Now it's your turn — ask me anything about helium, space, or science. What's your first question?",
 };
+
+const INTRO_SCRIPT = [
+  "Hey there, sixth graders! I'm Helium Hero, and I am literally the element helium. That's right, atomic number 2, the second most abundant element in the entire universe. About 24 percent of all the stuff you can see in space is me.",
+  "So here's my origin story. I was born in the Big Bang, the very first moments of the universe, almost 14 billion years ago. Scientists actually discovered me by looking at the Sun before they even found me on Earth. That's why I'm named after Helios, the Greek god of the Sun.",
+  "Now let me tell you what makes me special. I'm a noble gas, which means I don't react with anything. I'm the calmest, chillest element on the periodic table. I also have the lowest boiling point of any element, negative 269 degrees Celsius. That's only about 4 degrees above absolute zero.",
+  "You probably know me from balloons, right? I make them float because I'm 7 times lighter than air. But I do way cooler stuff than that. I cool down the giant magnets inside MRI machines at hospitals. NASA uses me to pressurize rocket fuel tanks. I help scientists at the Large Hadron Collider study the tiniest particles in existence.",
+  "Here's something wild. When you cool me down to near absolute zero, I become a superfluid. That means I have zero viscosity and I can actually climb up the walls of a container. Quantum physics is amazing.",
+  "One more thing you should know. Earth is actually running out of helium. Because I'm so light, I float right out of the atmosphere and into space. We can't make more of me cheaply, so every helium balloon that pops is a little bit of me gone forever. Use me wisely!",
+];
 
 const FOCUS_VISIBLE_RING =
   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--blue)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg)]";
@@ -216,6 +225,8 @@ export function HeliumHeroApp() {
   const [videoLayerVisible, setVideoLayerVisible] = useState(false);
   const [voiceHint, setVoiceHint] = useState<string | null>(null);
   const [showSoundUnlock, setShowSoundUnlock] = useState(false);
+  const [introState, setIntroState] = useState<"ready" | "playing" | "done">("ready");
+  const introAbortRef = useRef<AbortController | null>(null);
 
   const listRef = useRef<HTMLDivElement>(null);
   const inFlightRef = useRef(false);
@@ -380,6 +391,96 @@ export function HeliumHeroApp() {
     setTypeRevealLen(0);
     setIsTypingAssistant(false);
   }, [stopActiveChat]);
+
+  const playIntro = useCallback(async () => {
+    setIntroState("playing");
+    introAbortRef.current?.abort();
+    const ac = new AbortController();
+    introAbortRef.current = ac;
+    const { signal } = ac;
+
+    playbackGenRef.current += 1;
+    const gen = playbackGenRef.current;
+
+    for (let i = 0; i < INTRO_SCRIPT.length; i++) {
+      if (signal.aborted || gen !== playbackGenRef.current) break;
+      const paragraph = INTRO_SCRIPT[i];
+
+      // Show text in chat
+      if (i === 0) {
+        setThread([{ role: "assistant", content: paragraph }]);
+      } else {
+        setThread((prev) => {
+          const updated = [...prev];
+          updated[updated.length - 1] = {
+            role: "assistant",
+            content: INTRO_SCRIPT.slice(0, i + 1).join("\n\n"),
+          };
+          return updated;
+        });
+      }
+
+      // Play TTS for this paragraph
+      try {
+        const voiceId =
+          typeof window !== "undefined"
+            ? localStorage.getItem("elevenlabs_voice_id")
+            : null;
+        const res = await fetch("/api/speak", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          signal,
+          body: JSON.stringify({
+            text: paragraph,
+            ...(voiceId ? { voiceId } : {}),
+          }),
+        });
+        if (signal.aborted || gen !== playbackGenRef.current) break;
+        if (!res.ok) continue;
+
+        const blob = await res.blob();
+        if (signal.aborted || gen !== playbackGenRef.current) break;
+        if (blob.size < 400) continue;
+
+        const url = URL.createObjectURL(blob);
+        stopElevenLabs();
+        elevenObjectUrlRef.current = url;
+        const audio = new Audio(url);
+        elevenAudioRef.current = audio;
+
+        setSpeaking(true);
+        await new Promise<void>((resolve) => {
+          audio.addEventListener("ended", () => resolve(), { once: true });
+          audio.addEventListener("error", () => resolve(), { once: true });
+          audio.play().catch(() => resolve());
+        });
+
+        if (signal.aborted || gen !== playbackGenRef.current) break;
+      } catch {
+        if (signal.aborted) break;
+      }
+    }
+
+    setSpeaking(false);
+    stopElevenLabs();
+    if (!ac.signal.aborted) {
+      // Add the welcome message to transition to Q&A
+      setThread((prev) => [
+        ...prev,
+        { role: "assistant", content: WELCOME_MESSAGE.content },
+      ]);
+      setIntroState("done");
+    }
+  }, [stopElevenLabs]);
+
+  const skipIntro = useCallback(() => {
+    introAbortRef.current?.abort();
+    playbackGenRef.current += 1;
+    setSpeaking(false);
+    stopElevenLabs();
+    setThread([{ role: "assistant", content: INTRO_SCRIPT.join("\n\n") + "\n\n" + WELCOME_MESSAGE.content }]);
+    setIntroState("done");
+  }, [stopElevenLabs]);
 
   const flushAssistantTyping = useCallback(() => {
     if (typeRafRef.current != null) {
@@ -1212,9 +1313,44 @@ export function HeliumHeroApp() {
                 aria-label="Chat messages"
                 className="h-[280px] flex-1 space-y-3 overflow-y-auto overflow-x-hidden px-4 py-4 sm:h-[320px] sm:px-5 max-[640px]:h-[260px] lg:h-auto lg:min-h-[300px]"
               >
-                <div className="animate-slide-in-msg flex justify-start">
-                  <AssistantBubble>{WELCOME_MESSAGE.content}</AssistantBubble>
-                </div>
+                {introState === "ready" && thread.length === 0 && (
+                  <div className="animate-slide-in-msg flex flex-col items-center gap-4 py-8 text-center">
+                    <p className="font-heading text-lg font-semibold text-[var(--blue)] sm:text-xl">
+                      Meet Helium Hero
+                    </p>
+                    <p className="font-body max-w-sm text-[0.9rem] leading-relaxed text-[var(--muted)]">
+                      So my best friend Michael asked me to help him with this project, and honestly, who better to explain helium than helium itself?
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => void playIntro()}
+                      className={`font-heading mt-2 rounded-xl border border-[rgba(168,216,240,0.35)] bg-[rgba(168,216,240,0.12)] px-8 py-3 text-base font-semibold text-[var(--blue)] transition hover:bg-[rgba(168,216,240,0.2)] hover:border-[var(--blue)]/50 ${FOCUS_VISIBLE_RING}`}
+                    >
+                      Start Presentation
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIntroState("done");
+                        setThread([{ role: "assistant", content: WELCOME_MESSAGE.content }]);
+                      }}
+                      className="font-label text-[0.7rem] text-[var(--steel)] underline underline-offset-2 transition hover:text-[var(--blue)]"
+                    >
+                      Skip to Q&A
+                    </button>
+                  </div>
+                )}
+                {introState === "playing" && thread.length > 0 && (
+                  <div className="mb-2 flex justify-center">
+                    <button
+                      type="button"
+                      onClick={skipIntro}
+                      className={`font-label inline-flex items-center gap-1.5 rounded-full border border-[rgba(168,216,240,0.28)] bg-[rgba(168,216,240,0.08)] px-3 py-1.5 text-[0.7rem] uppercase tracking-wide text-[var(--blue)] transition hover:border-[var(--blue)]/50 ${FOCUS_VISIBLE_RING}`}
+                    >
+                      Skip to Q&A
+                    </button>
+                  </div>
+                )}
                 {thread.map((m, i) => {
                   const isLiveTyping =
                     m.role === "assistant" &&
@@ -1279,7 +1415,7 @@ export function HeliumHeroApp() {
                     <button
                       key={q.label}
                       type="button"
-                      disabled={loading}
+                      disabled={loading || introState !== "done"}
                       onClick={() => void sendChat(q.text)}
                       aria-label={q.text}
                       className={`font-body min-h-10 shrink-0 whitespace-nowrap rounded-[2rem] border border-[rgba(168,216,240,0.18)] bg-[rgba(255,255,255,0.05)] px-3 py-2 text-[0.8rem] font-normal text-[var(--white)] transition hover:border-[rgba(168,216,240,0.4)] hover:bg-[rgba(168,216,240,0.1)] disabled:opacity-50 ${FOCUS_VISIBLE_RING}`}
@@ -1315,15 +1451,15 @@ export function HeliumHeroApp() {
                       id="chat-message-input"
                       value={input}
                       onChange={(e) => setInput(e.target.value)}
-                      placeholder="Ask Helium Hero…"
+                      placeholder={introState !== "done" ? "Listen to the presentation first…" : "Ask Helium Hero…"}
                       className={`font-body min-h-12 min-w-0 flex-1 rounded-lg border border-[var(--border)] bg-[rgba(255,255,255,0.06)] px-4 py-3 text-[0.94rem] font-normal text-[var(--white)] outline-none transition placeholder:text-[var(--dim)] focus:border-[rgba(168,216,240,0.45)] ${FOCUS_VISIBLE_RING}`}
-                      disabled={loading}
+                      disabled={loading || introState !== "done"}
                       autoComplete="off"
                       aria-label="Message to Helium Hero"
                     />
                     <button
                       type="submit"
-                      disabled={loading || !input.trim()}
+                      disabled={loading || introState !== "done" || !input.trim()}
                       className={`font-heading min-h-12 shrink-0 rounded-lg border border-[rgba(168,216,240,0.32)] bg-[rgba(168,216,240,0.12)] px-6 py-3 text-[0.94rem] font-semibold text-[var(--blue)] transition hover:border-[var(--blue)]/45 hover:bg-[rgba(168,216,240,0.16)] disabled:opacity-40 ${FOCUS_VISIBLE_RING}`}
                     >
                       Send
