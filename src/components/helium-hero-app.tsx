@@ -940,8 +940,6 @@ export function HeliumHeroApp() {
         aria-hidden
       />
 
-      {/* Scan line — behind content */}
-      <div className="scan-line z-0" aria-hidden />
 
       {/* Gas particles */}
       <div
@@ -997,7 +995,7 @@ export function HeliumHeroApp() {
             >
               {/* Left column: portrait + info */}
               <div className="space-y-6">
-              <div className="flex flex-col items-center gap-6 sm:flex-row sm:items-start sm:gap-8 lg:flex-col lg:items-start">
+              <div className="flex flex-col items-center gap-6 lg:items-start">
               <div className="flex flex-col items-center gap-4 md:items-start">
                 <div
                   role="region"
@@ -1006,7 +1004,7 @@ export function HeliumHeroApp() {
                       ? "Helium Hero is speaking — glowing portrait frame"
                       : "Helium Hero video frame"
                   }
-                  className={`relative w-[min(92vw,280px)] shrink-0 rounded-[0.875rem] border border-[var(--border)] sm:w-[300px] md:w-[340px] lg:w-full lg:max-w-[400px] md:max-w-none ${heroRing ? "hero-portrait-speaking" : "hero-glow-idle"}`}
+                  className={`relative w-full max-w-[min(92vw,400px)] rounded-[0.875rem] border border-[var(--border)] ${heroRing ? "hero-portrait-speaking" : "hero-glow-idle"}`}
                 >
                   <span
                     className="pointer-events-none absolute left-2 top-2 z-20 h-3.5 w-3.5 border-l-2 border-t-2 border-[var(--blue)]"
