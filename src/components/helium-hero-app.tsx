@@ -37,11 +37,44 @@ const HERO_STATS: { label: string; value: string }[] = [
   { label: "Discovered", value: "1868" },
 ];
 
-const ABILITY_BARS: { label: string; pct: number }[] = [
-  { label: "Buoyancy", pct: 95 },
-  { label: "Inertness", pct: 100 },
-  { label: "Thermal Resistance", pct: 88 },
-  { label: "Cosmic Origin", pct: 100 },
+const ABILITY_BARS: {
+  label: string;
+  pct: number;
+  definition: string;
+  meaning: string;
+}[] = [
+  {
+    label: "Buoyancy",
+    pct: 95,
+    definition:
+      "Upward push a fluid gives an object inside it (displaces heavier surroundings).",
+    meaning:
+      "Helium is far less dense than air, so it floats up — balloons rise because helium lifts against gravity.",
+  },
+  {
+    label: "Inertness",
+    pct: 100,
+    definition:
+      "Chemical calmness: almost no bonding or reactions under everyday conditions.",
+    meaning:
+      "As a noble gas, helium won’t burn or react like hydrogen — it’s safe for lifts and labs.",
+  },
+  {
+    label: "Thermal resistance",
+    pct: 88,
+    definition:
+      "How a substance behaves across huge hot-to-cold swings and heat flow.",
+    meaning:
+      "Helium can be the coldest liquid we use (−269 °C) yet also behaves as a reliable gas in tech.",
+  },
+  {
+    label: "Cosmic origin",
+    pct: 100,
+    definition:
+      "Where an element’s atoms were forged — Big Bang, stars, or decay underground.",
+    meaning:
+      "Most helium was made in the Big Bang and stars; on Earth we trap tiny amounts gathered from underground decay.",
+  },
 ];
 
 const ATMOSPHERE_ROWS: {
@@ -136,7 +169,7 @@ const GAS_PRESETS = Array.from({ length: 18 }, (_, i) => ({
 const WELCOME_MESSAGE: ChatMessage = {
   role: "assistant",
   content:
-    "Hey there, science star! I’m Helium Hero — ask me anything about helium, the universe, or why balloons love floating. 🎈",
+    "Hey, sixth-grade legend — I'm Helium Hero. Ask me wild questions about helium and space (I might go on a silly tangent first). Keep it respectful or Mr. Cotter hears about it. What's your first question? 🎈",
 };
 
 const FOCUS_VISIBLE_RING =
@@ -1146,13 +1179,36 @@ export function HeliumHeroApp() {
                   ))}
                 </div>
 
-                <div className="space-y-3">
+                <div className="space-y-4">
+                  <p className="font-label text-[0.58rem] uppercase tracking-[0.12em] text-[var(--steel)]">
+                    Ability ratings — with definitions
+                  </p>
                   {ABILITY_BARS.map((a, i) => (
-                    <div key={a.label}>
-                      <p className="font-body mb-1 text-[0.8rem] font-normal text-[var(--muted)]">
-                        {a.label}
+                    <div key={a.label} className="space-y-1.5">
+                      <div className="flex flex-wrap items-baseline justify-between gap-2">
+                        <span className="font-heading text-[0.9rem] font-semibold capitalize text-[var(--ice)] sm:text-[0.95rem]">
+                          {a.label}
+                        </span>
+                        <span className="font-label text-[0.65rem] tabular-nums text-[var(--steel)]">
+                          {a.pct}%
+                        </span>
+                      </div>
+                      <p className="font-body text-[0.78rem] font-normal leading-snug text-[var(--muted)] sm:text-[0.8rem]">
+                        <span className="font-label text-[0.58rem] uppercase tracking-wide text-[var(--blue)]">
+                          Definition —{" "}
+                        </span>
+                        {a.definition}
                       </p>
-                      <div className="h-2 overflow-hidden rounded-sm bg-[rgba(255,255,255,0.07)]">
+                      <p className="font-body text-[0.78rem] font-normal leading-snug text-[var(--muted)] sm:text-[0.8rem]">
+                        <span className="font-semibold text-[var(--ice)]">
+                          For helium:{" "}
+                        </span>
+                        {a.meaning}
+                      </p>
+                      <div
+                        className="h-2 overflow-hidden rounded-sm bg-[rgba(255,255,255,0.07)]"
+                        aria-hidden
+                      >
                         <div
                           className="ability-fill h-full rounded-sm bg-gradient-to-r from-[var(--steel)] to-[var(--blue)]"
                           style={{
