@@ -892,8 +892,58 @@ export function HeliumHeroApp() {
         Skip to chat with Helium Hero
       </a>
 
+      {/* ── Background layers ── */}
       <div className="page-bg pointer-events-none fixed inset-0 z-0" aria-hidden />
 
+      {/* Hex grid */}
+      <div className="hex-grid pointer-events-none fixed inset-0 z-0" aria-hidden />
+
+      {/* Noise texture */}
+      <div className="noise-overlay pointer-events-none fixed inset-0 z-0 opacity-60" aria-hidden />
+
+      {/* Aurora blobs */}
+      <div
+        className="aurora-blob z-0"
+        style={{ top: "5%", left: "10%", width: 500, height: 500, background: "radial-gradient(circle, rgba(100,180,255,0.4), transparent 70%)", animationDuration: "18s" }}
+        aria-hidden
+      />
+      <div
+        className="aurora-blob z-0"
+        style={{ top: "40%", right: "-5%", width: 450, height: 450, background: "radial-gradient(circle, rgba(80,220,200,0.3), transparent 70%)", animationDuration: "22s", animationDelay: "4s" }}
+        aria-hidden
+      />
+      <div
+        className="aurora-blob z-0"
+        style={{ bottom: "10%", left: "30%", width: 400, height: 400, background: "radial-gradient(circle, rgba(120,140,220,0.25), transparent 70%)", animationDuration: "26s", animationDelay: "8s" }}
+        aria-hidden
+      />
+
+      {/* Floating orbs */}
+      <div
+        className="float-orb z-0"
+        style={{ top: "15%", left: "85%", width: 6, height: 6, borderRadius: "50%", background: "var(--blue)", opacity: 0.5, animationDuration: "7s" }}
+        aria-hidden
+      />
+      <div
+        className="float-orb z-0"
+        style={{ top: "60%", left: "8%", width: 4, height: 4, borderRadius: "50%", background: "var(--steel)", opacity: 0.4, animationDuration: "9s", animationDelay: "2s" }}
+        aria-hidden
+      />
+      <div
+        className="float-orb z-0"
+        style={{ top: "35%", left: "55%", width: 5, height: 5, borderRadius: "50%", background: "var(--ice)", opacity: 0.35, animationDuration: "11s", animationDelay: "5s" }}
+        aria-hidden
+      />
+      <div
+        className="float-orb z-0"
+        style={{ top: "75%", left: "70%", width: 3, height: 3, borderRadius: "50%", background: "var(--blue)", opacity: 0.45, animationDuration: "8s", animationDelay: "1s" }}
+        aria-hidden
+      />
+
+      {/* Scan line */}
+      <div className="scan-line z-[1]" aria-hidden />
+
+      {/* Gas particles */}
       <div
         className="pointer-events-none fixed inset-0 z-0 overflow-hidden"
         aria-hidden
@@ -956,7 +1006,7 @@ export function HeliumHeroApp() {
                       ? "Helium Hero is speaking — glowing portrait frame"
                       : "Helium Hero video frame"
                   }
-                  className={`relative w-[min(92vw,200px)] shrink-0 rounded-[0.875rem] border border-[var(--border)] sm:w-[220px] md:h-[calc(260px*4/3)] md:w-[260px] md:max-w-none ${heroRing ? "hero-portrait-speaking" : ""}`}
+                  className={`relative w-[min(92vw,200px)] shrink-0 rounded-[0.875rem] border border-[var(--border)] sm:w-[220px] md:h-[calc(260px*4/3)] md:w-[260px] md:max-w-none ${heroRing ? "hero-portrait-speaking" : "hero-glow-idle"}`}
                 >
                   <span
                     className="pointer-events-none absolute left-2 top-2 z-20 h-3.5 w-3.5 border-l-2 border-t-2 border-[var(--blue)]"

@@ -164,3 +164,107 @@ body {
     0 0 0 1px rgba(168, 216, 240, 0.22),
     0 12px 40px rgba(0, 0, 0, 0.35);
 }
+
+/* ── Aurora shimmer ── */
+@keyframes aurora-drift {
+  0% { transform: translate(0, 0) scale(1) rotate(0deg); }
+  33% { transform: translate(40px, -30px) scale(1.15) rotate(2deg); }
+  66% { transform: translate(-20px, 20px) scale(0.95) rotate(-1deg); }
+  100% { transform: translate(0, 0) scale(1) rotate(0deg); }
+}
+
+.aurora-blob {
+  position: fixed;
+  border-radius: 50%;
+  pointer-events: none;
+  filter: blur(90px);
+  opacity: 0.35;
+  animation: aurora-drift ease-in-out infinite;
+  will-change: transform;
+}
+
+/* ── Hex grid overlay ── */
+.hex-grid {
+  background-image:
+    linear-gradient(rgba(168, 216, 240, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(168, 216, 240, 0.035) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: radial-gradient(ellipse 80% 60% at 50% 20%, black 10%, transparent 70%);
+}
+
+/* ── Shimmer sweep on cards ── */
+@keyframes shimmer-sweep {
+  0% { left: -100%; }
+  100% { left: 200%; }
+}
+
+.surface-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.surface-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  width: 50%;
+  background: linear-gradient(
+    105deg,
+    transparent 40%,
+    rgba(168, 216, 240, 0.06) 50%,
+    transparent 60%
+  );
+  animation: shimmer-sweep 8s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* ── Glow pulse ring for hero portrait ── */
+@keyframes glow-ring {
+  0%, 100% { box-shadow: 0 0 15px 2px rgba(168, 216, 240, 0.15); }
+  50% { box-shadow: 0 0 25px 6px rgba(168, 216, 240, 0.3); }
+}
+
+.hero-glow-idle {
+  animation: glow-ring 4s ease-in-out infinite;
+}
+
+/* ── Floating orb with parallax feel ── */
+@keyframes float-orb {
+  0%, 100% { transform: translateY(0) translateX(0); }
+  25% { transform: translateY(-15px) translateX(8px); }
+  50% { transform: translateY(-5px) translateX(-12px); }
+  75% { transform: translateY(-20px) translateX(5px); }
+}
+
+.float-orb {
+  animation: float-orb ease-in-out infinite;
+  pointer-events: none;
+  position: fixed;
+}
+
+/* ── Scan line (subtle top-down sweep) ── */
+@keyframes scan-sweep {
+  0% { transform: translateY(-100%); opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { transform: translateY(100vh); opacity: 0; }
+}
+
+.scan-line {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--blue), transparent);
+  opacity: 0.25;
+  animation: scan-sweep 12s linear infinite;
+  pointer-events: none;
+}
+
+/* ── Noise texture overlay ── */
+.noise-overlay {
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 256px 256px;
+}
