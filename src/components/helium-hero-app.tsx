@@ -10,6 +10,13 @@ import { playMp3FromReadableStream } from "@/lib/play-mp3-mse";
 const HERO_IDLE_VIDEO =
   "/video/duplexnyc_Helium_Hero_full_body_superhero_standing_heroic_pos_a50e06aa-8550-4525-82a3-32a1887d542f_0.mp4";
 
+/**
+ * D-ID talking-head runs in parallel with ElevenLabs `/api/speak`. When D-ID returns,
+ * we stop ElevenLabs audio — if the video fails autoplay or has no usable audio, you hear nothing.
+ * Default: off so voice always comes from ElevenLabs. Set `NEXT_PUBLIC_D_ID_TALK=true` to opt in.
+ */
+const D_ID_TALK_ENABLED = process.env.NEXT_PUBLIC_D_ID_TALK === "true";
+
 type ChatMessage = { role: "user" | "assistant"; content: string };
 
 type VoiceStatus = "Ready" | "Thinking..." | "Speaking...";
@@ -919,7 +926,9 @@ export function HeliumHeroApp() {
         }
 
         if (gen !== playbackGenRef.current) return;
-        void requestDidTalk(acc, gen, signal);
+        if (D_ID_TALK_ENABLED) {
+          void requestDidTalk(acc, gen, signal);
+        }
       } catch (e) {
         if (
           signal.aborted ||
