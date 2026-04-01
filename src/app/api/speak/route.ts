@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { DEFAULT_ELEVENLABS_VOICE_ID } from "@/lib/default-voice";
 
+/** Allow slow ElevenLabs responses on Vercel (default fn limit is often 10s). */
+export const maxDuration = 60;
+
 export async function POST(req: NextRequest) {
   const key = process.env.ELEVENLABS_API_KEY;
   if (!key) {

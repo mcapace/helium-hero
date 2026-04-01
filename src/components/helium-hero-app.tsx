@@ -5,8 +5,6 @@ import {
   readAnthropicMessageStream,
   takeFirstCompleteSentence,
 } from "@/lib/anthropic-stream";
-import { playMp3FromReadableStream } from "@/lib/play-mp3-mse";
-
 const HERO_IDLE_VIDEO =
   "/video/duplexnyc_Helium_Hero_full_body_superhero_standing_heroic_pos_a50e06aa-8550-4525-82a3-32a1887d542f_0.mp4";
 
@@ -569,7 +567,11 @@ export function HeliumHeroApp() {
 
       const playBlobAsAudio = async (blob: Blob): Promise<void> => {
         if (signal.aborted || gen !== playbackGenRef.current) return;
-        if (blob.size < 400 || blob.type.includes("json")) {
+        if (
+          blob.size < 80 ||
+          blob.type.includes("json") ||
+          blob.type === "text/plain"
+        ) {
           const snippet = await blob.text().catch(() => "");
           if (
             snippet.includes("missing_permissions") ||
@@ -676,77 +678,10 @@ export function HeliumHeroApp() {
           return;
         }
 
-        if (!res.body) {
-          const blob = await res.blob();
-          await playBlobAsAudio(blob);
-          return;
-        }
-
-        const canMse =
-          typeof MediaSource !== "undefined" &&
-          MediaSource.isTypeSupported("audio/mpeg");
-
-        if (canMse) {
-          const cloned = res.clone();
-          try {
-            stopElevenLabs();
-            await playMp3FromReadableStream(res.body, {
-              signal,
-              cancelled: () => gen !== playbackGenRef.current,
-              attach: (a, url) => {
-                elevenAudioRef.current = a;
-                elevenObjectUrlRef.current = url;
-              },
-              onPlaying: () => {
-                if (gen === playbackGenRef.current) {
-                  setSpeaking(true);
-                  setVoiceHint(null);
-                  setShowSoundUnlock(false);
-                }
-              },
-              onSpeakingStop: () => {
-                if (gen !== playbackGenRef.current) return;
-                if (!supplantedByVideoRef.current) setSpeaking(false);
-              },
-              onNotAllowed: (tryPlay) => {
-                soundUnlockRef.current = async () => {
-                  try {
-                    await tryPlay();
-                    setShowSoundUnlock(false);
-                    setVoiceHint(null);
-                    soundUnlockRef.current = null;
-                  } catch {
-                    /* ignore */
-                  }
-                };
-                setShowSoundUnlock(true);
-                setVoiceHint(
-                  "Tap Enable sound — playback was blocked until you interact.",
-                );
-              },
-              onDecodeError: () => {
-                if (
-                  gen === playbackGenRef.current &&
-                  !supplantedByVideoRef.current
-                ) {
-                  setSpeaking(false);
-                  setVoiceHint("Could not decode audio — try another browser.");
-                }
-              },
-            });
-            return;
-          } catch (e) {
-            console.warn("Streaming MP3 failed, falling back to buffer:", e);
-            stopElevenLabs();
-            const buf = await cloned.arrayBuffer();
-            if (signal.aborted || gen !== playbackGenRef.current) return;
-            await playBlobAsAudio(new Blob([buf], { type: "audio/mpeg" }));
-            return;
-          }
-        }
-
+        // Buffer full MP3, then play: MediaSource streaming often fails silently
+        // (Safari, strict autoplay, decode edge cases) compared to a single blob + Audio().
         const blob = await res.blob();
-        if (signal.aborted) return;
+        if (signal.aborted || gen !== playbackGenRef.current) return;
         await playBlobAsAudio(blob);
       } catch (e) {
         if (signal.aborted) return;
@@ -1306,6 +1241,17 @@ export function HeliumHeroApp() {
                   </button>
                 ) : null}
               </header>
+
+              {voiceHint ? (
+                <div
+                  role="status"
+                  aria-live="polite"
+                  className="border-b border-amber-400/35 bg-amber-950/35 px-4 py-2.5 font-body text-[0.85rem] leading-snug text-amber-50/95 sm:px-5"
+                >
+                  <span className="font-semibold text-amber-200">Voice — </span>
+                  {voiceHint}
+                </div>
+              ) : null}
 
               <p
                 id="chat-panel-hint"
